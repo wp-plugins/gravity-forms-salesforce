@@ -12,7 +12,7 @@ Integrate the remarkable <a href="http://wordpressformplugin.com/?r=salesforce" 
 
 > This plugin requires the amazing <a href="http://wordpressformplugin.com/?r=salesforce" rel="nofollow">Gravity Forms plugin</a>. <strong>Don't use Gravity Forms? <a href="http://wordpressformplugin.com/?r=salesforce" rel="nofollow">Get the plugin</a></strong>, then start using this great plugin!
 
-### Integrate Gravity Forms with Salesforce
+### Integrate Gravity Forms with Salesforce.com
 Add one setting, check a box when configuring your forms, and all your form entries will be added to Salesforce from now on. <strong>Integrating with Salesforce has never been so simple.</strong>
 
 There is another <a href="http://wordpress.org/extend/plugins/salesforce-wordpress-to-lead/" rel="nofollow">Salesforce form plugin</a>, but it doesn't integrate with the best form plugin for WordPress: Gravity Forms.
