@@ -1,8 +1,8 @@
 <?php
 /*
 Plugin Name: Gravity Forms Salesforce Add-On
-Description: Integrate Gravity Forms with Salesforce - form submissions are automatically sent to your Salesforce account!
-Version: 1.0
+Description: Integrate <a href="http://wordpressformplugin.com?r=salesforce">Gravity Forms</a> with Salesforce - form submissions are automatically sent to your Salesforce account!
+Version: 1.1
 Author: Katz Web Services, Inc.
 Author URI: http://www.katzwebservices.com
 */
@@ -208,7 +208,7 @@ class GFSalesforce {
 		<?php 
 			if($plugin_page !== 'gf_settings') {
 			
-				echo '<h2>'.__('Gravity Forms Salesforce Addon',"gravityformssalesforce").'</h2>';
+				echo '<h2>'.__('Gravity Forms Salesforce Add-on',"gravityformssalesforce").'</h2>';
 			}
 			if($message) { 
 				echo "<div class='fade below-h2 {$class}'>".wpautop($message)."</div>";
@@ -225,7 +225,7 @@ class GFSalesforce {
                 <tr>
                     <th scope="row"><label for="gf_salesforce_org_id"><?php _e("Salesforce Org. ID", "gravityformssalesforce"); ?></label> </th>
                     <td><input type="text" size="75" id="gf_salesforce_org_id" class="code pre" style="font-size:1.1em; margin-right:.5em;" name="gf_salesforce_org_id" value="<?php echo esc_attr($settings) ?>"/> <?php echo $validimage; ?>
-                    <?php echo '<small style="display:block;">'.__('To find your Organization ID, in your Salesforce.com account, go to Setup &raquo; Company Profile &raquo; Company Information','gravityformssalesforce').'</small>';?></td>
+                    <?php echo '<small style="display:block;">'.__('To find your Salesforce.com Organization ID, in your Salesforce.com account, go to [Your Name] &raquo; Setup &raquo; Company Profile (near the bottom of the left sidebar) &raquo; Company Information','gravityformssalesforce').'</small>';?></td>
                 </tr>
                 <tr>
                     <td colspan="2" ><input type="submit" name="gf_salesforce_submit" class="submit button-primary" value="<?php _e("Save Settings", "gravityformssalesforce") ?>" /></td>
@@ -234,7 +234,7 @@ class GFSalesforce {
             </table>
         </form>
 		
-	<?php if($valid) { ?>
+	<?php if(isset($valid) && $valid) { ?>
 		<div class="hr-divider"></div>
 		
 		<h3>Usage Instructions</h3>
@@ -250,6 +250,10 @@ class GFSalesforce {
 			</ol>
 		</div>
 		
+		<h4><?php _e('Custom Fields', "gravityformssalesforce"); ?></h4>
+		<?php echo wpautop(__('When you are trying to map a custom field, you need to set either the "Admin Label" for the input (in the Advanced tab of each field in the  Gravity Forms form editor) or the Parameter Name (in Advanced tab, visible after checking "Allow field to be populated dynamically") to be the API Name of the Custom Field as shown in Salesforce. For example, a Custom Field with a Field Label "Web Source" could have an API Name of `SFGA__Web_Source__c`.
+
+You can find your Custom Fields under [Your Name] &rarr; Setup &rarr; Leads &rarr; Fields, then at the bottom of the page, there&rsquo;s a list of "Lead Custom Fields & Relationships". This is where you will find the "API Name" to use in the Admin Label or Parameter Name.',"gravityformssalesforce")); ?>
 		
         <h4><?php _e('Form Fields', "gravityformssalesforce"); ?></h4>
         <p><?php _e('Fields will be automatically mapped by Salesforce using the default Gravity Forms labels.', "gravityformssalesforce"); ?></p>
@@ -268,7 +272,7 @@ class GFSalesforce {
             <li><?php _e(sprintf('%ssubject%s', '<code>', '</code>'), "gravityformssalesforce"); ?></li>
             <li><?php _e(sprintf('%sdescription%s, %squestion%s, %smessage%s, or %scomments%s for Description', '<code>', '</code>','<code>', '</code>','<code>', '</code>','<code>', '</code>'), "gravityformssalesforce"); ?></li>
         </ul>
-
+		
 		<form action="" method="post">
             <?php wp_nonce_field("uninstall", "gf_salesforce_uninstall") ?>
             <?php if(GFCommon::current_user_can_any("gravityforms_salesforce_uninstall")){ ?>
@@ -306,7 +310,7 @@ class GFSalesforce {
     }
 
 	public static function send_request($post, $debug = false) {
-	
+		global $wp_version;
         $post['oid'] 			= get_option("gf_salesforce_oid");
 		$post['debug']			= $debug;
 		
@@ -316,13 +320,16 @@ class GFSalesforce {
 		$args = array( 	
 			'body' 		=> $post,
 			'headers' 	=> array(
-				'user-agent' => 'Gravity Forms Salesforce Addon plugin - WordPress/'.$wp_version.'; '.get_bloginfo('url'),
+				'user-agent' => 'Gravity Forms Salesforce Add-on plugin - WordPress/'.$wp_version.'; '.get_bloginfo('url'),
 			),
 			'sslverify'	=> false,  
 		);
-		$result = wp_remote_post('https://www.salesforce.com/servlet/servlet.WebToLead?encoding=UTF-8', $args);
 		
-#		echo '<pre>'; print_r($result); print_r($args); die();
+		$sub = $debug ? 'test' : 'www';
+		
+		$result = wp_remote_post('https://'.$sub.'.salesforce.com/servlet/servlet.WebToLead?encoding=UTF-8', $args);
+		
+		#echo '<pre>'; print_r($result); print_r($args); ;
 		
 		if(wp_remote_retrieve_response_code($result) !== 200) { // Server is down.
 			return array();
@@ -370,6 +377,8 @@ class GFSalesforce {
 			'doNotCall'		=> array('label' => 'Do Not Call'),
 			'retURL'		=> array('label' => 'Return URL')
 		);
+		
+		$data = array();
     	
     	//displaying all submitted fields
 		foreach($form_meta["fields"] as $fieldKey => $field){
@@ -382,7 +391,7 @@ class GFSalesforce {
 			if( is_array($field["inputs"]) ){
 			   //handling multi-input fields such as name and address
 			   foreach($field["inputs"] as $inputKey => $input){
-				   $value = trim(rtrim(stripslashes($_POST["input_" . str_replace('.', '_', $input["id"])])));
+				   $value = trim(rtrim(stripslashes(@$_POST["input_" . str_replace('.', '_', $input["id"])])));
 				   $label = self::getLabel($input["label"], $field, $input);
 				   if(!$label) { $label = self::getLabel($field['label'], $field, $input); }
 				   
@@ -400,11 +409,11 @@ class GFSalesforce {
 			   	   		$message = 'true';
 					   $data['description'] .= "\n".$value."\n";
 			   	   } else if($label == 'street') {
-			   	   		$data['street'] .= $value."\n";
+			   	   		$data['street'] = isset($data['street']) ? $data['street'].$value."\n" : $value."\n";
 			   	   } else if (trim(strtolower($label)) == 'salesforce' ) {
 			   	   		$salesforce = $value;
 			   	   } else {
-			   	   		if((!empty($data[$label]) && !empty($value) && $value !== '0') || empty($data[$label]) && array_key_exists($label, $defaults)) {
+			   	   		if((!empty($data["{$label}"]) && !empty($value) && $value !== '0') || empty($data["{$label}"]) && array_key_exists("{$label}", $defaults)) {
 					   		$data[$label] = $value ;
 					   }
 				   }
@@ -426,14 +435,14 @@ class GFSalesforce {
 				   	}
 			   } else if ($label == 'description') {
 		   	   		$message = 'true';
-				   $data['description'] .= "\n".$value."\n";
+				   $data['description'] = empty($data['description']) ? $value."\n" : $data['description']."\n".$value."\n";
 		   	   } else if($label == 'street') {
 			   		$data['street'] .= $value."\n";
 			   } else if (trim(strtolower($label)) == 'salesforce' ) {
 		   	   		$salesforce = $value;
 		   	   } else {
-		   	   		if((!empty($data[$label]) && !empty($value) && $value !== '0') || empty($data[$label]) && array_key_exists($label, $defaults)) {
-				   		$data[$label] = $value ;
+		   	   		if((!empty($data["{$label}"]) && !empty($value) && $value !== '0') || empty($data["{$label}"]) && (array_key_exists("{$label}", $defaults) || apply_filters('gf_salesforce_use_custom_fields', true) === true)) {
+				   		$data["{$label}"] = $value ;
 				   }
 			   }
 		   }
@@ -566,6 +575,12 @@ class GFSalesforce {
 			$label = 'title';
 		} else if ( strpos( $the_label,"question") !== false || strpos( $the_label,"message") !== false || strpos( $the_label,"comments") !== false || strpos( $the_label,"description") !== false ) {
 			$label = 'description';
+		} elseif(!empty($field['adminLabel']) && (apply_filters('gf_salesforce_use_adminlabel', true) === true)) {
+			$label = $field['adminLabel'];
+		} elseif(!empty($field['inputName']) && (apply_filters('gf_salesforce_use_inputname', true) === true)) {
+			$label = $field['inputName'];
+		} elseif(!empty($field['label']) && (apply_filters('gf_salesforce_use_label', true) === true)) {
+			$label = $field['label'];
 		} else {
 			$label = false;
 		}

@@ -12,14 +12,15 @@ Integrate the remarkable <a href="http://wordpressformplugin.com/?r=salesforce" 
 
 > This plugin requires the amazing <a href="http://wordpressformplugin.com/?r=salesforce" rel="nofollow">Gravity Forms plugin</a>. <strong>Don't use Gravity Forms? <a href="http://wordpressformplugin.com/?r=salesforce" rel="nofollow">Get the plugin</a></strong>, then start using this great plugin!
 
-### Integrate Gravity Forms with Salesforce.com
+### Integrate Gravity Forms with Salesforce
 Add one setting, check a box when configuring your forms, and all your form entries will be added to Salesforce from now on. <strong>Integrating with Salesforce has never been so simple.</strong>
-
-There is another <a href="http://wordpress.org/extend/plugins/salesforce-wordpress-to-lead/" rel="nofollow">Salesforce form plugin</a>, but it doesn't integrate with the best form plugin for WordPress: Gravity Forms.
 
 ###Gravity Forms + Salesforce = A Powerful Combination
 
 This free Salesforce Add-On for Gravity Forms adds contacts into Salesforce automatically, making customer relationship management simple. The setup process takes less than three minutes, and your contact form will be linked with Salesforce.
+
+#### Now with Custom Field support! ####
+
 
 #### Other Gravity Forms Add-ons:
 
@@ -46,6 +47,12 @@ If you have questions, comments, or issues with this plugin, <strong>please leav
 
 == Frequently Asked Questions == 
 
+= Can I use Salesforce Custom Fields? =
+
+With version 1.1, you can. When you are trying to map a custom field, you need to set either the "Admin Label" for the input (in the Advanced tab of each field in the  Gravity Forms form editor) or the Parameter Name (in Advanced tab, visible after checking "Allow field to be populated dynamically") to be the API Name of the Custom Field as shown in Salesforce. For example, a Custom Field with a Field Label "Web Source" could have an API Name of `SFGA__Web_Source__c`.
+
+You can find your Custom Fields under [Your Name] &rarr; Setup &rarr; Leads &rarr; Fields, then at the bottom of the page, there's a list of "Lead Custom Fields & Relationships". This is where you will find the "API Name" to use in the Admin Label or Parameter Name.
+
 = Does this plugin require Gravity Forms? =
 This plugin requires the brilliant [Gravity Forms plugin](http://wordpressformplugin.com/?r=salesforce). __Don't use Gravity Forms? [Buy the plugin](http://wordpressformplugin.com/?r=salesforce)__ and start using this add-on plugin!
 
@@ -54,10 +61,20 @@ This plugin is released under a GPL license.
 
 == Changelog ==
 
+= 1.1 =
+* Added support for Custom Fields (view the FAQ here, or the Gravity Forms Salesforce Add-on Settings page for this plugin)
+* Improved authentication check in the settings page - no longer creates a blank lead.
+* Fixed some PHP notices
+
 = 1.0 =
 * Launch!
 
 == Upgrade Notice ==
+
+= 1.1 =
+* Added support for Custom Fields (view the FAQ here, or the Gravity Forms Salesforce Add-on Settings page for this plugin)
+* Improved authentication check in the settings page - no longer creates a blank lead.
+* Fixed some PHP notices
 
 = 1.0 =
 * Launch!
