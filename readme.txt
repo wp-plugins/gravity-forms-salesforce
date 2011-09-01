@@ -27,6 +27,7 @@ This free Salesforce Add-On for Gravity Forms adds contacts into Salesforce auto
 * <a href="http://wordpress.org/extend/plugins/gravity-forms-highrise/">Gravity Forms Highrise Add-on</a> - Integrate Gravity Forms with Highrise, a CRM
 * <a href="http://wordpress.org/extend/plugins/gravity-forms-addons/">Gravity Forms Directory & Addons</a> - Turn Gravity Forms into a WordPress Directory plugin.
 * <a href="http://wordpress.org/extend/plugins/gravity-forms-constant-contact/">Gravity Forms + Constant Contact</a> - If you use Constant Contact and Gravity Forms, this plugin is for you.
+* <a href="http://wordpress.org/extend/plugins/gravity-forms-exacttarget/">Gravity Forms ExactTarget Add-on</a> - Integrate Gravity Forms with ExactTarget
 
 If you have questions, comments, or issues with this plugin, <strong>please leave your feedback on the <a href="http://wordpress.org/tags/gravity-forms-salesforce?forum_id=10">Plugin Support Forum</a></strong>.
 
