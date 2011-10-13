@@ -48,6 +48,23 @@ If you have questions, comments, or issues with this plugin, <strong>please leav
 
 == Frequently Asked Questions == 
 
+= How do I set a custom Lead Source? =
+This feature support was added in version 1.1.1. `gf_salesforce_lead_source` is the filter.
+
+Add the following to your theme's `functions.php` file. Modify as you see fit:
+
+`
+add_filter('gf_salesforce_lead_source', 'make_my_own_lead_source', 1, 3); 
+
+function make_my_own_lead_source($lead_source, $form_meta, $data) {
+	// $lead_source - What was about to be used (normally Gravity Forms Form Title)
+	// $form_meta - Gravity Forms form details
+	// $data - The data passed to Salesforce
+
+	return $lead_source; // Return something else if you want to.
+}
+`
+
 = Can I use Salesforce Custom Fields? =
 
 With version 1.1, you can. When you are trying to map a custom field, you need to set either the "Admin Label" for the input (in the Advanced tab of each field in the  Gravity Forms form editor) or the Parameter Name (in Advanced tab, visible after checking "Allow field to be populated dynamically") to be the API Name of the Custom Field as shown in Salesforce. For example, a Custom Field with a Field Label "Web Source" could have an API Name of `SFGA__Web_Source__c`.
