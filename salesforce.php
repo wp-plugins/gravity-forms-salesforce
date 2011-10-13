@@ -2,7 +2,7 @@
 /*
 Plugin Name: Gravity Forms Salesforce Add-On
 Description: Integrate <a href="http://wordpressformplugin.com?r=salesforce">Gravity Forms</a> with Salesforce - form submissions are automatically sent to your Salesforce account!
-Version: 1.1
+Version: 1.1.1
 Author: Katz Web Services, Inc.
 Author URI: http://www.katzwebservices.com
 */
@@ -42,16 +42,13 @@ class GFSalesforce {
             //enqueueing sack for AJAX requests
             wp_enqueue_script(array("sack"));
 			wp_enqueue_style('gravityforms-admin', GFCommon::get_base_url().'/css/admin.css');
-         }
-         else if(in_array(RG_CURRENT_PAGE, array("admin-ajax.php"))){
+         } else if(in_array(RG_CURRENT_PAGE, array("admin-ajax.php"))){
 
             add_action('wp_ajax_rg_update_feed_active', array('GFSalesforce', 'update_feed_active'));
             add_action('wp_ajax_gf_select_salesforce_form', array('GFSalesforce', 'select_salesforce_form'));
 
-        }
-        else{
-             //handling post submission.
-            add_action("gform_pre_submission", array('GFSalesforce', 'push'), 10, 2);
+        } else {
+            add_action("gform_pre_submission", array('GFSalesforce', 'push'), 10, 2); //handling post submission.    
         }
         
         add_action("gform_editor_js", array('GFSalesforce', 'add_form_option_js'), 10);
@@ -308,7 +305,7 @@ You can find your Custom Fields under [Your Name] &rarr; Setup &rarr; Leads &rar
         return self::send_request(array(), $debug);
         
     }
-
+		
 	public static function send_request($post, $debug = false) {
 		global $wp_version;
         $post['oid'] 			= get_option("gf_salesforce_oid");
@@ -329,8 +326,6 @@ You can find your Custom Fields under [Your Name] &rarr; Setup &rarr; Leads &rar
 		
 		$result = wp_remote_post('https://'.$sub.'.salesforce.com/servlet/servlet.WebToLead?encoding=UTF-8', $args);
 		
-		#echo '<pre>'; print_r($result); print_r($args); ;
-		
 		if(wp_remote_retrieve_response_code($result) !== 200) { // Server is down.
 			return array();
 		} elseif(!isset($result['headers']['is-processed'])) { // For a valid debug test
@@ -346,6 +341,8 @@ You can find your Custom Fields under [Your Name] &rarr; Setup &rarr; Leads &rar
 	
     public static function push($form_meta, $entry = array()){
     	global $wp_version;
+
+    	if(!isset($form_meta['enableSalesforce']) || empty($form_meta['enableSalesforce'])) { return; }
     	
     	$defaults = array(
 			'first_name' 	=> array('label' => 'First name'),
@@ -455,7 +452,8 @@ You can find your Custom Fields under [Your Name] &rarr; Setup &rarr; Leads &rar
 	  	
 		$post = $data;
     	
-		$data['lead_source']	= isset($form_meta['title']) ? $form_meta['title'] : 'Gravity Forms Form';
+    	$lead_source = isset($form_meta['title']) ? $form_meta['title'] : 'Gravity Forms Form';
+		$data['lead_source'] = apply_filters('gf_salesforce_lead_source', $lead_source, $form_meta, $data);
 		$data['debug']			= 0;
 		
 		$result = self::send_request($data);
