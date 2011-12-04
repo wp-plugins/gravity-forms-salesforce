@@ -79,6 +79,12 @@ This plugin is released under a GPL license.
 
 == Changelog ==
 
+= 1.1.2 = 
+* Fixed issue where entered Salesforce field mapping labels were being overwritten by auto-labeling.
+	- Added filter `gf_salesforce_autolabel` to turn off auto-labeling by adding `add_filter('gf_salesforce_autolabel', '__return_false');` to your theme's functions.php file.
+	- Made auto-labeling much less aggressive: now only matches exact matches for First Name, Company, etc.
+* Added support for checkboxes and other multiple-item fields using `implode()` PHP functionality: lists will be converted to comma-separated values.
+
 = 1.1.1 = 
 * Fixes issue where all forms get submitted to Salesforce, not only enabled forms (<a href="http://www.seodenver.com/forums/topic/all-forms-posting-to-saleforce/">reported on support forum</a>).
 * Added a new filter to modify the lead source `gf_salesforce_lead_source`, <a href="http://wordpress.org/support/topic/657400" rel="nofollow">as requested here</a>. Passes three arguments: `$lead_source`, `$gf_form_meta`, `$salesforce_data`.
@@ -92,6 +98,12 @@ This plugin is released under a GPL license.
 * Launch!
 
 == Upgrade Notice ==
+
+= 1.1.2 = 
+* Fixed issue where entered Salesforce field mapping labels were being overwritten by auto-labeling.
+	- Added filter `gf_salesforce_autolabel` to turn off auto-labeling by adding `add_filter('gf_salesforce_autolabel', '__return_false');` to your theme's functions.php file.
+	- Made auto-labeling much less aggressive: now only matches exact matches for First Name, Company, etc.
+* Added support for checkboxes and other multiple-item fields using `implode()` PHP functionality: lists will be converted to comma-separated values.
 
 = 1.1.1 = 
 * Fixes issue where all forms get submitted to Salesforce, not only enabled forms (<a href="http://www.seodenver.com/forums/topic/all-forms-posting-to-saleforce/">reported on support forum</a>).

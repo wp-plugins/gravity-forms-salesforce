@@ -2,7 +2,7 @@
 /*
 Plugin Name: Gravity Forms Salesforce Add-On
 Description: Integrate <a href="http://wordpressformplugin.com?r=salesforce">Gravity Forms</a> with Salesforce - form submissions are automatically sent to your Salesforce account!
-Version: 1.1.1
+Version: 1.1.2
 Author: Katz Web Services, Inc.
 Author URI: http://www.katzwebservices.com
 */
@@ -14,7 +14,7 @@ class GFSalesforce {
 	private static $path = "gravity-forms-salesforce/salesforce.php";
 	private static $url = "http://www.gravityforms.com";
 	private static $slug = "gravity-forms-salesforce";
-	private static $version = "1.0";
+	private static $version = "1.1.2";
 	private static $min_gravityforms_version = "1.3.9";
 
     //Plugin starting point. Will load appropriate files
@@ -46,16 +46,23 @@ class GFSalesforce {
 
             add_action('wp_ajax_rg_update_feed_active', array('GFSalesforce', 'update_feed_active'));
             add_action('wp_ajax_gf_select_salesforce_form', array('GFSalesforce', 'select_salesforce_form'));
-
+		} elseif(in_array(RG_CURRENT_PAGE, array('admin.php'))) {
+        	add_action('admin_head', array('GFSalesforce', 'show_salesforce_status'));
         } else {
             add_action("gform_pre_submission", array('GFSalesforce', 'push'), 10, 2); //handling post submission.    
         }
+        
+        #add_action("gform_field_advanced_settings", array('GFSalesforce',"add_salesforce_editor_field"), 10, 2); // For future use
         
         add_action("gform_editor_js", array('GFSalesforce', 'add_form_option_js'), 10);
 
 		add_filter('gform_tooltips', array('GFSalesforce', 'add_form_option_tooltip'));
 		
 		add_filter("gform_confirmation", array('GFSalesforce', 'confirmation_error'));
+    }
+    
+	public function add_salesforce_editor_field($position, $form_id) {
+    	/* For future use */
     }
 	
 	public static function confirmation_error($confirmation, $form = '', $lead = '', $ajax ='' ) {
@@ -69,6 +76,46 @@ class GFSalesforce {
 	public static function add_form_option_tooltip($tooltips) {
 		$tooltips["form_salesforce"] = "<h6>" . __("Enable Salesforce Integration", "gravity-forms-salesforce") . "</h6>" . __("Check this box to integrate this form with Salesforce. When an user submits the form, the data will be added to Salesforce.", "gravity-forms-salesforce");
 		return $tooltips;
+	}
+	
+	public static function show_salesforce_status() {
+		global $pagenow; 
+		
+		if(isset($_REQUEST['page']) && $_REQUEST['page'] == 'gf_edit_forms' && !isset($_REQUEST['id'])) {
+			$activeforms = array();
+        	$forms = RGFormsModel::get_forms();
+        	if(!is_array($forms)) { return; }
+        	foreach($forms as $form) {
+        		$form = RGFormsModel::get_form_meta($form->id);
+        		if(is_array($form) && !empty($form['enableSalesforce'])) {
+        			$activeforms[] = $form['id'];
+        		}
+        	}
+        	
+        	if(!empty($activeforms)) {
+		
+?>
+<style type="text/css">
+	td a.row-title span.salesforce_enabled {
+		position: absolute;
+		background: url('<?php echo WP_PLUGIN_URL.'/'.str_replace(basename( __FILE__),"",plugin_basename(__FILE__)); ?>/salesforce-16x16.png') right top no-repeat;
+		height: 16px;
+		width: 16px;
+		margin-left: 10px;
+	}
+</style>
+<script type="text/javascript">
+	jQuery(document).ready(function($) {
+		$('table tbody.user-list tr').each(function() {
+			if($('td.column-id', $(this)).text() == <?php echo implode('||', $activeforms); ?>) {
+				$('td a.row-title', $(this)).append('<span class="salesforce_enabled" title="<?php _e('Salesforce integration is enabled for this Form', "gravity-forms-salesforce"); ?>"></span>');
+			}
+		});		
+	});
+</script>
+<?php
+			}
+		}
 	}
 
 	public static function add_form_option_js() { 
@@ -133,7 +180,7 @@ class GFSalesforce {
 	                ,tooltip: 'bottomLeft'
 	      		}
 	  		 }
-	      });
+	    });
 	});
 </script><?php
 	}		
@@ -248,9 +295,11 @@ class GFSalesforce {
 		</div>
 		
 		<h4><?php _e('Custom Fields', "gravityformssalesforce"); ?></h4>
-		<?php echo wpautop(__('When you are trying to map a custom field, you need to set either the "Admin Label" for the input (in the Advanced tab of each field in the  Gravity Forms form editor) or the Parameter Name (in Advanced tab, visible after checking "Allow field to be populated dynamically") to be the API Name of the Custom Field as shown in Salesforce. For example, a Custom Field with a Field Label "Web Source" could have an API Name of `SFGA__Web_Source__c`.
+		<?php echo wpautop(sprintf(__('When you are trying to map a custom field, you need to set either the "Admin Label" for the input (in the Advanced tab of each field in the  Gravity Forms form editor) or the Parameter Name (in Advanced tab, visible after checking "Allow field to be populated dynamically") to be the API Name of the Custom Field as shown in Salesforce. For example, a Custom Field with a Field Label "Web Source" could have an API Name of `SFGA__Web_Source__c`.
 
-You can find your Custom Fields under [Your Name] &rarr; Setup &rarr; Leads &rarr; Fields, then at the bottom of the page, there&rsquo;s a list of "Lead Custom Fields & Relationships". This is where you will find the "API Name" to use in the Admin Label or Parameter Name.',"gravityformssalesforce")); ?>
+You can find your Custom Fields under [Your Name] &rarr; Setup &rarr; Leads &rarr; Fields, then at the bottom of the page, there&rsquo;s a list of "Lead Custom Fields & Relationships". This is where you will find the "API Name" to use in the Admin Label or Parameter Name.
+
+For more information on custom fields, %sread this Salesforce.com Help Article%s', "gravityformssalesforce"), '<a href="https://help.salesforce.com/apex/htviewhelpdoc?id=customize_customfields.htm&language=en" target="_blank">', '</a>')); ?>
 		
         <h4><?php _e('Form Fields', "gravityformssalesforce"); ?></h4>
         <p><?php _e('Fields will be automatically mapped by Salesforce using the default Gravity Forms labels.', "gravityformssalesforce"); ?></p>
@@ -324,6 +373,8 @@ You can find your Custom Fields under [Your Name] &rarr; Setup &rarr; Leads &rar
 		
 		$sub = $debug ? 'test' : 'www';
 		
+#		echo '<pre>'; print_r($args); die();
+		
 		$result = wp_remote_post('https://'.$sub.'.salesforce.com/servlet/servlet.WebToLead?encoding=UTF-8', $args);
 		
 		if(wp_remote_retrieve_response_code($result) !== 200) { // Server is down.
@@ -356,7 +407,6 @@ You can find your Custom Fields under [Your Name] &rarr; Setup &rarr; Leads &rar
 			'fax' 			=> array('label' => 'Fax'),
 			'description' 	=> array('label' => 'Message'),
 			'title' 		=> array('label' => 'Title'),
-			'company' 		=> array('label' => 'Company'),
 			'street' 		=> array('label' => 'Street'),
 			'city'	 		=> array('label' => 'City'),
 			'state'	 		=> array('label' => 'State'),
@@ -377,6 +427,7 @@ You can find your Custom Fields under [Your Name] &rarr; Setup &rarr; Leads &rar
 		
 		$data = array();
     	
+    	
     	//displaying all submitted fields
 		foreach($form_meta["fields"] as $fieldKey => $field){
 			
@@ -384,14 +435,13 @@ You can find your Custom Fields under [Your Name] &rarr; Setup &rarr; Leads &rar
 				continue;
 			}
 			
-			
 			if( is_array($field["inputs"]) ){
+				$valuearray = array();
 			   //handling multi-input fields such as name and address
 			   foreach($field["inputs"] as $inputKey => $input){
 				   $value = trim(rtrim(stripslashes(@$_POST["input_" . str_replace('.', '_', $input["id"])])));
 				   $label = self::getLabel($input["label"], $field, $input);
 				   if(!$label) { $label = self::getLabel($field['label'], $field, $input); }
-				   
 				   if ($label == 'BothNames' && !empty($value)) {
 					    $names = explode(" ", $value);
 					    $names[0] = trim(rtrim($names[0]));
@@ -410,10 +460,19 @@ You can find your Custom Fields under [Your Name] &rarr; Setup &rarr; Leads &rar
 			   	   } else if (trim(strtolower($label)) == 'salesforce' ) {
 			   	   		$salesforce = $value;
 			   	   } else {
-			   	   		if((!empty($data["{$label}"]) && !empty($value) && $value !== '0') || empty($data["{$label}"]) && array_key_exists("{$label}", $defaults)) {
+			   	   		if(!empty($field['inputName']) && (apply_filters('gf_salesforce_use_inputname', true) === true)) {
+							$valuearray["{$field['inputName']}"][] = $value;
+						} elseif(!empty($field['adminLabel']) && (apply_filters('gf_salesforce_use_adminlabel', true) === true)) {
+							$valuearray["{$field['adminLabel']}"][] = $value;
+						} elseif((!empty($data["{$label}"]) && !empty($value) && $value !== '0') || empty($data["{$label}"]) && array_key_exists("{$label}", $defaults)) {
 					   		$data[$label] = $value ;
-					   }
+						}
 				   }
+			   }
+			   if(isset($valuearray["{$field['adminLabel']}"])) {
+			   		$data[$label] = implode(apply_filters('gf_salesforce_implode_glue', ', '), $valuearray["{$field['adminLabel']}"]);
+			   } elseif(isset($valuearray["{$field['inputName']}"])) {
+			   		$data[$label] = implode(apply_filters('gf_salesforce_implode_glue', ', '), $valuearray["{$field['inputName']}"]);
 			   }
 		   } else {
 			   //handling single-input fields such as text and paragraph (textarea)
@@ -438,12 +497,17 @@ You can find your Custom Fields under [Your Name] &rarr; Setup &rarr; Leads &rar
 			   } else if (trim(strtolower($label)) == 'salesforce' ) {
 		   	   		$salesforce = $value;
 		   	   } else {
-		   	   		if((!empty($data["{$label}"]) && !empty($value) && $value !== '0') || empty($data["{$label}"]) && (array_key_exists("{$label}", $defaults) || apply_filters('gf_salesforce_use_custom_fields', true) === true)) {
+		   	   		if(!empty($field['inputName']) && (apply_filters('gf_salesforce_use_inputname', true) === true)) {
+						$data["{$field['inputName']}"] = $value ;
+					} elseif(!empty($field['adminLabel']) && (apply_filters('gf_salesforce_use_adminlabel', true) === true)) {
+						$data["{$field['adminLabel']}"] = $value ;
+					} elseif((!empty($data["{$label}"]) && !empty($value) && $value !== '0') || empty($data["{$label}"]) && (array_key_exists("{$label}", $defaults) || apply_filters('gf_salesforce_use_custom_fields', true) === true)) {
 				   		$data["{$label}"] = $value ;
 				   }
 			   }
 		   }
 	   }
+	   
 	   	$data['description'] = isset($data['description']) ? trim(rtrim($data['description'])) : '';
 	   	$data['street'] = isset($data['street']) ? trim(rtrim($data['street'])) : '';
 	  	$data['emailOptOut'] = !empty($data['emailOptOut']);
@@ -517,15 +581,23 @@ You can find your Custom Fields under [Your Name] &rarr; Setup &rarr; Leads &rar
 				
 		$the_label = strtolower($temp);
 		
-		if ($type == 'name' && (strpos($the_label, 'first') !== false || ( strpos($the_label,"name") !== false && strpos($the_label,"first") !== false))) {
+		if(!empty($field['inputName']) && (apply_filters('gf_salesforce_use_inputname', true) === true)) {
+			$label = $field['inputName'];
+		} elseif(!empty($field['adminLabel']) && (apply_filters('gf_salesforce_use_adminlabel', true) === true)) {
+			$label = $field['adminLabel'];
+		} 
+		
+		if(!apply_filters('gf_salesforce_autolabel', true) || !empty($label)) { return $label; }
+		
+		if ($type == 'name' && ($the_label === "first name" || $the_label === "first")) {
 			$label = 'first_name'; 
-		} else if ($type == 'name' && ( strpos( $the_label,"last") !== false || ( strpos( $the_label,"name") !== false && strpos($the_label,"last") !== false) )) {
+		} else if ($type == 'name' && ($the_label === "last name" || $the_label === "last")) {
 			$label = 'last_name';
-		} elseif($the_label == 'prefix' || $the_label == 'salutation' || strpos( $the_label, 'prefix') || strpos( $the_label, 'salutation')) {
+		} elseif($the_label == 'prefix' || $the_label == 'salutation' || $the_label === 'prefix' || $the_label === 'salutation') {
 			$label = 'salutation';
-		} else if ( strpos( $the_label,"name") !== false && $type == 'name') {
+		} else if ( $the_label === 'both names') {
 			$label = 'BothNames';
-		} else if ( strpos( $the_label,"company") !== false ) {
+		} else if ($the_label === "company") {
 			$label = 'company';
 		} else if ($the_label == 'member_status') {
 			$label = 'member_status';
@@ -535,7 +607,7 @@ You can find your Custom Fields under [Your Name] &rarr; Setup &rarr; Leads &rar
 			$label = 'faxOptOut';
 		} else if ( $the_label === "donotcall") {
 			$label = 'doNotCall';
-		} else if ( strpos( $the_label,"email") !== false || strpos( $the_label,"e-mail") !== false || $type == 'email') {
+		} else if ( $the_label === "email" || $the_label === "e-mail" || $type == 'email') {
 			$label = 'email';
 		} else if ( strpos( $the_label,"mobile") !== false || strpos( $the_label,"cell") !== false ) {
 			$label = 'mobile';
@@ -573,10 +645,6 @@ You can find your Custom Fields under [Your Name] &rarr; Setup &rarr; Leads &rar
 			$label = 'title';
 		} else if ( strpos( $the_label,"question") !== false || strpos( $the_label,"message") !== false || strpos( $the_label,"comments") !== false || strpos( $the_label,"description") !== false ) {
 			$label = 'description';
-		} elseif(!empty($field['adminLabel']) && (apply_filters('gf_salesforce_use_adminlabel', true) === true)) {
-			$label = $field['adminLabel'];
-		} elseif(!empty($field['inputName']) && (apply_filters('gf_salesforce_use_inputname', true) === true)) {
-			$label = $field['inputName'];
 		} elseif(!empty($field['label']) && (apply_filters('gf_salesforce_use_label', true) === true)) {
 			$label = $field['label'];
 		} else {
