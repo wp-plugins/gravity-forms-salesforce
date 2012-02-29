@@ -2,7 +2,7 @@
 /*
 Plugin Name: Gravity Forms Salesforce Add-On
 Description: Integrate <a href="http://wordpressformplugin.com?r=salesforce">Gravity Forms</a> with Salesforce - form submissions are automatically sent to your Salesforce account!
-Version: 1.1.2
+Version: 1.1.3
 Author: Katz Web Services, Inc.
 Author URI: http://www.katzwebservices.com
 */
@@ -14,7 +14,7 @@ class GFSalesforce {
 	private static $path = "gravity-forms-salesforce/salesforce.php";
 	private static $url = "http://www.gravityforms.com";
 	private static $slug = "gravity-forms-salesforce";
-	private static $version = "1.1.2";
+	private static $version = "1.1.3";
 	private static $min_gravityforms_version = "1.3.9";
 
     //Plugin starting point. Will load appropriate files
@@ -145,7 +145,7 @@ class GFSalesforce {
 
 <script type="text/javascript">
 	jQuery(document).ready(function($) {
-		$('#gform_settings_tab_2 .gforms_form_settings').append('<li><input type="checkbox" id="gform_enable_salesforce" /> <label for="gform_enable_salesforce" id="gform_enable_salesforce_label"><?php _e("Enable Salesforce integration", "gravity-forms-salesforce") ?> <?php echo $tooltip; ?></label></li>');
+		$('#gform_settings_tab_2 .gforms_form_settings').append("<li><input type='checkbox' id='gform_enable_salesforce' /> <label for='gform_enable_salesforce' id='gform_enable_salesforce_label'><?php _e("Enable Salesforce integration", "gravity-forms-salesforce") ?> <?php echo $tooltip; ?></label></li>");
 		
 		if($().prop) {
 			$("#gform_enable_salesforce").prop("checked", form.enableSalesforce ? true : false);

@@ -1,7 +1,7 @@
 === Gravity Forms Salesforce Add-on ===
 Tags: gravity forms, forms, gravity, form, crm, gravity form, salesforce, salesforce plugin, form, forms, gravity, gravity form, gravity forms, secure form, simplemodal contact form, wp contact form, widget, sales force, customer, contact, contacts, address, addresses, address book
 Requires at least: 2.8
-Tested up to: 3.2.1
+Tested up to: 3.3.1
 Stable tag: trunk
 Contributors: katzwebdesign
 Donate link:https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=zackkatz%40gmail%2ecom&item_name=Gravity%20Forms%20Salesforce%20Addon&no_shipping=0&no_note=1&tax=0&currency_code=USD&lc=US&bn=PP%2dDonationsBF&charset=UTF%2d8
@@ -79,6 +79,9 @@ This plugin is released under a GPL license.
 
 == Changelog ==
 
+= 1.1.3 =
+* Fixed issue with latest Gravity Forms preventing Salesforce checkbox from showing up - thanks <a href="http://msmprojects.com/">Michael Manley</a>!
+
 = 1.1.2 = 
 * Fixed issue where entered Salesforce field mapping labels were being overwritten by auto-labeling.
 	- Added filter `gf_salesforce_autolabel` to turn off auto-labeling by adding `add_filter('gf_salesforce_autolabel', '__return_false');` to your theme's functions.php file.
@@ -98,6 +101,9 @@ This plugin is released under a GPL license.
 * Launch!
 
 == Upgrade Notice ==
+
+= 1.1.3 =
+* Fixed issue with latest Gravity Forms preventing Salesforce checkbox from showing up - thanks <a href="http://msmprojects.com/">Michael Manley</a>!
 
 = 1.1.2 = 
 * Fixed issue where entered Salesforce field mapping labels were being overwritten by auto-labeling.
