@@ -6,11 +6,11 @@ Stable tag: trunk
 Contributors: katzwebdesign
 Donate link:https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=zackkatz%40gmail%2ecom&item_name=Gravity%20Forms%20Salesforce%20Addon&no_shipping=0&no_note=1&tax=0&currency_code=USD&lc=US&bn=PP%2dDonationsBF&charset=UTF%2d8
 
-Integrate the remarkable <a href="http://wordpressformplugin.com/?r=salesforce" rel="nofollow">Gravity Forms</a> plugin with Salesforce.
+Integrate the remarkable <a href="http://www.gravityforms.com/?r=salesforce" rel="nofollow">Gravity Forms</a> plugin with Salesforce.
 
 == Description ==
 
-> This plugin requires the amazing <a href="http://wordpressformplugin.com/?r=salesforce" rel="nofollow">Gravity Forms plugin</a>. <strong>Don't use Gravity Forms? <a href="http://wordpressformplugin.com/?r=salesforce" rel="nofollow">Get the plugin</a></strong>, then start using this great plugin!
+> This plugin requires the amazing <a href="http://www.gravityforms.com/?r=salesforce" rel="nofollow">Gravity Forms plugin</a>. <strong>Don't use Gravity Forms? <a href="http://www.gravityforms.com/?r=salesforce" rel="nofollow">Get the plugin</a></strong>, then start using this great plugin!
 
 ### Integrate Gravity Forms with Salesforce
 Add one setting, check a box when configuring your forms, and all your form entries will be added to Salesforce from now on. <strong>Integrating with Salesforce has never been so simple.</strong>
@@ -72,7 +72,7 @@ With version 1.1, you can. When you are trying to map a custom field, you need t
 You can find your Custom Fields under [Your Name] &rarr; Setup &rarr; Leads &rarr; Fields, then at the bottom of the page, there's a list of "Lead Custom Fields & Relationships". This is where you will find the "API Name" to use in the Admin Label or Parameter Name.
 
 = Does this plugin require Gravity Forms? =
-This plugin requires the brilliant [Gravity Forms plugin](http://wordpressformplugin.com/?r=salesforce). __Don't use Gravity Forms? [Buy the plugin](http://wordpressformplugin.com/?r=salesforce)__ and start using this add-on plugin!
+This plugin requires the brilliant [Gravity Forms plugin](http://www.gravityforms.com/?r=salesforce). __Don't use Gravity Forms? [Buy the plugin](http://www.gravityforms.com/?r=salesforce)__ and start using this add-on plugin!
 
 = What's the license for this plugin? =
 This plugin is released under a GPL license.
