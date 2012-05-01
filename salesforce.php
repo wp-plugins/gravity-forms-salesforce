@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: Gravity Forms Salesforce Add-On
-Description: Integrate <a href="http://wordpressformplugin.com?r=salesforce">Gravity Forms</a> with Salesforce - form submissions are automatically sent to your Salesforce account!
+Description: Integrate <a href="http://formplugin.com?r=salesforce">Gravity Forms</a> with Salesforce - form submissions are automatically sent to your Salesforce account!
 Version: 1.1.3
 Author: Katz Web Services, Inc.
 Author URI: http://www.katzwebservices.com
