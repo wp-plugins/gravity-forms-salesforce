@@ -10,8 +10,6 @@ Integrate the remarkable <a href="http://www.gravityforms.com/?r=salesforce" rel
 
 == Description ==
 
-> This plugin requires the amazing <a href="http://www.gravityforms.com/?r=salesforce" rel="nofollow">Gravity Forms plugin</a>. <strong>Don't use Gravity Forms? <a href="http://www.gravityforms.com/?r=salesforce" rel="nofollow">Get the plugin</a></strong>, then start using this great plugin!
-
 ### Integrate Gravity Forms with Salesforce
 Add one setting, check a box when configuring your forms, and all your form entries will be added to Salesforce from now on. <strong>Integrating with Salesforce has never been so simple.</strong>
 
