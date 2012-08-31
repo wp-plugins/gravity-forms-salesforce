@@ -31,8 +31,9 @@ If you have questions, comments, or issues with this plugin, <strong>please leav
 
 == Screenshots ==
 
-1. The Gravity Forms Salesforce Add-on settings page
-2. It's easy to integrate Gravity Forms with Salesforce: check a box in the "Advanced" tab of a form's Form Settings
+1. Configure Salesforce field mapping. Set up custom objects.
+1. Integrate with more than one form.
+3. Salesforce.com settings page
 
 == Installation == 
 
