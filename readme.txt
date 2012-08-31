@@ -2,7 +2,7 @@
 Tags: gravity forms, forms, gravity, form, crm, gravity form, salesforce, salesforce plugin, form, forms, gravity, gravity form, gravity forms, secure form, simplemodal contact form, wp contact form, widget, sales force, customer, contact, contacts, address, addresses, address book
 Requires at least: 2.8
 Tested up to: 3.4.1
-Stable tag: trunk
+Stable tag: 2.0.1
 Contributors: katzwebdesign
 Donate link:https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=zackkatz%40gmail%2ecom&item_name=Gravity%20Forms%20Salesforce%20Addon&no_shipping=0&no_note=1&tax=0&currency_code=USD&lc=US&bn=PP%2dDonationsBF&charset=UTF%2d8
 
@@ -82,6 +82,9 @@ You can find your Custom Fields under [Your Name] &rarr; Setup &rarr; Leads &rar
 This plugin is released under a GPL license.
 
 == Changelog ==
+
+= 2.0.1 =
+* Renamed the plugin files so that you wouldn't need to re-activate.
 
 = 2.0 =
 * Added API plugin. A complete rewrite; switched to SOAP API. Will require re-configuring the plugin.
