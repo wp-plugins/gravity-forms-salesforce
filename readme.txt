@@ -6,11 +6,11 @@ Stable tag: trunk
 Contributors: katzwebdesign,katzwebservices
 Donate link:https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=zackkatz%40gmail%2ecom&item_name=Gravity%20Forms%20Salesforce%20Addon&no_shipping=0&no_note=1&tax=0&currency_code=USD&lc=US&bn=PP%2dDonationsBF&charset=UTF%2d8
 
-Integrate the remarkable <a href="http://www.gravityforms.com/?r=salesforce" rel="nofollow">Gravity Forms</a> plugin with Salesforce.
+Integrate the remarkable Gravity Forms plugin with Salesforce.
 
 == Description ==
 
-### Integrate Gravity Forms with Salesforce
+### Integrate Your Forms with Salesforce
 Add one setting, check a box when configuring your forms, and all your form entries will be added to Salesforce from now on. <strong>Integrating with Salesforce has never been so simple.</strong>
 
 ###Gravity Forms + Salesforce = A Powerful Combination
@@ -47,7 +47,16 @@ If you have questions, comments, or issues with this plugin, <strong>please leav
 
 == Frequently Asked Questions == 
 
-= How do I set a custom Lead Source? =
+= How do I configure the API plugin? =
+
+### How to set up integration:
+
+1. In WordPress admin, go to Forms > Salesforce > Salesforce Settings
+2. If you don't have your security token, <a href="https://na9.salesforce.com/_ui/system/security/ResetApiTokenEdit">follow this link to Reset Your Security Token</a>
+3. Come back to this settings page and enter your Security Token, Salesforce.com Username and Password.
+4. Save the settings, and you should be done!
+
+= How do I set a custom Lead Source? (Web to Lead) =
 This feature support was added in version 1.1.1. `gf_salesforce_lead_source` is the filter.
 
 Add the following to your theme's `functions.php` file. Modify as you see fit:
@@ -64,19 +73,23 @@ function make_my_own_lead_source($lead_source, $form_meta, $data) {
 }
 `
 
-= Can I use Salesforce Custom Fields? =
+= Can I use Salesforce Custom Fields? (Web to Lead) =
 
 With version 1.1, you can. When you are trying to map a custom field, you need to set either the "Admin Label" for the input (in the Advanced tab of each field in the  Gravity Forms form editor) or the Parameter Name (in Advanced tab, visible after checking "Allow field to be populated dynamically") to be the API Name of the Custom Field as shown in Salesforce. For example, a Custom Field with a Field Label "Web Source" could have an API Name of `SFGA__Web_Source__c`.
 
 You can find your Custom Fields under [Your Name] &rarr; Setup &rarr; Leads &rarr; Fields, then at the bottom of the page, there's a list of "Lead Custom Fields & Relationships". This is where you will find the "API Name" to use in the Admin Label or Parameter Name.
 
-= Does this plugin require Gravity Forms? =
-This plugin requires the brilliant [Gravity Forms plugin](http://www.gravityforms.com/?r=salesforce). __Don't use Gravity Forms? [Buy the plugin](http://www.gravityforms.com/?r=salesforce)__ and start using this add-on plugin!
-
 = What's the license for this plugin? =
 This plugin is released under a GPL license.
 
 == Changelog ==
+
+= 2.0.1 =
+* Renamed the plugin files so that you wouldn't need to re-activate.
+
+= 2.0 =
+* Added API plugin. A complete rewrite; switched to SOAP API. Will require re-configuring the plugin.
+* Renamed 1.x plugin "Gravity Forms Salesforce Web to Lead Add-On"
 
 = 1.1.3 =
 * Fixed issue with latest Gravity Forms preventing Salesforce checkbox from showing up - thanks <a href="http://msmprojects.com/">Michael Manley</a>!
@@ -100,6 +113,10 @@ This plugin is released under a GPL license.
 * Launch!
 
 == Upgrade Notice ==
+
+
+= 2.0 =
+* Complete rewrite; switched to SOAP API. Will require re-configuring the plugin.
 
 = 1.1.3 =
 * Fixed issue with latest Gravity Forms preventing Salesforce checkbox from showing up - thanks <a href="http://msmprojects.com/">Michael Manley</a>!
