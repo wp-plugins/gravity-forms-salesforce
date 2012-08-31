@@ -1,26 +1,53 @@
 <?php
 /*
-Plugin Name: Gravity Forms Salesforce Add-On
+Plugin Name: Gravity Forms Salesforce Web to Lead Add-On
 Description: Integrate <a href="http://formplugin.com?r=salesforce">Gravity Forms</a> with Salesforce - form submissions are automatically sent to your Salesforce account!
-Version: 1.1.3
+Version: 1.1.4
 Author: Katz Web Services, Inc.
 Author URI: http://www.katzwebservices.com
+
+------------------------------------------------------------------------
+Copyright 2012 Katz Web Services, Inc.
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+
 */
 
-add_action('init',  array('GFSalesforce', 'init'));
+add_action('init',  array('GFSalesforceWebToLead', 'init'));
 
-class GFSalesforce {
+class GFSalesforceWebToLead {
 
+	private static $name = "Gravity Forms Salesforce Add-On";
 	private static $path = "gravity-forms-salesforce/salesforce.php";
 	private static $url = "http://www.gravityforms.com";
 	private static $slug = "gravity-forms-salesforce";
-	private static $version = "1.1.3";
+	private static $version = "1.1.4";
 	private static $min_gravityforms_version = "1.3.9";
 
     //Plugin starting point. Will load appropriate files
     public static function init(){
-
-		add_action("admin_notices", array('GFSalesforce', 'is_gravity_forms_installed'), 10);
+	    global $pagenow;
+	    
+	    if($pagenow === 'plugins.php') {
+			add_action("admin_notices", array('GFSalesforceWebToLead', 'is_gravity_forms_installed'), 10);
+		}
+		
+		if(self::is_gravity_forms_installed(false, false) === 0){
+			add_action('after_plugin_row_' . self::$path, array('GFSalesforceWebToLead', 'plugin_row') );
+           return;
+        }
 		
 		if(!self::is_gravityforms_supported()){
            return;
@@ -30,12 +57,12 @@ class GFSalesforce {
 		
             //creates a new Settings page on Gravity Forms' settings screen
             if(self::has_access("gravityforms_salesforce")){
-                RGForms::add_settings_page("Salesforce", array("GFSalesforce", "settings_page"), self::get_base_url() . "/salesforce-50x50.png");
+                RGForms::add_settings_page("Salesforce Web to Lead", array("GFSalesforceWebToLead", "settings_page"), self::get_base_url() . "/images/salesforce-50x50.png");
             }
         }
 
         //creates the subnav left menu
-        add_filter("gform_addon_navigation", array('GFSalesforce', 'create_menu'));
+        add_filter("gform_addon_navigation", array('GFSalesforceWebToLead', 'create_menu'));
 
         if(self::is_salesforce_page()){
 
@@ -44,21 +71,63 @@ class GFSalesforce {
 			wp_enqueue_style('gravityforms-admin', GFCommon::get_base_url().'/css/admin.css');
          } else if(in_array(RG_CURRENT_PAGE, array("admin-ajax.php"))){
 
-            add_action('wp_ajax_rg_update_feed_active', array('GFSalesforce', 'update_feed_active'));
-            add_action('wp_ajax_gf_select_salesforce_form', array('GFSalesforce', 'select_salesforce_form'));
+            add_action('wp_ajax_rg_update_feed_active', array('GFSalesforceWebToLead', 'update_feed_active'));
+            add_action('wp_ajax_gf_select_salesforce_form', array('GFSalesforceWebToLead', 'select_salesforce_form'));
 		} elseif(in_array(RG_CURRENT_PAGE, array('admin.php'))) {
-        	add_action('admin_head', array('GFSalesforce', 'show_salesforce_status'));
+        	add_action('admin_head', array('GFSalesforceWebToLead', 'show_salesforce_status'));
         } else {
-            add_action("gform_pre_submission", array('GFSalesforce', 'push'), 10, 2); //handling post submission.    
+            add_action("gform_pre_submission", array('GFSalesforceWebToLead', 'push'), 10, 2); //handling post submission.    
         }
         
-        #add_action("gform_field_advanced_settings", array('GFSalesforce',"add_salesforce_editor_field"), 10, 2); // For future use
+        #add_action("gform_field_advanced_settings", array('GFSalesforceWebToLead',"add_salesforce_editor_field"), 10, 2); // For future use
         
-        add_action("gform_editor_js", array('GFSalesforce', 'add_form_option_js'), 10);
+        add_action("gform_editor_js", array('GFSalesforceWebToLead', 'add_form_option_js'), 10);
 
-		add_filter('gform_tooltips', array('GFSalesforce', 'add_form_option_tooltip'));
+		add_filter('gform_tooltips', array('GFSalesforceWebToLead', 'add_form_option_tooltip'));
 		
-		add_filter("gform_confirmation", array('GFSalesforce', 'confirmation_error'));
+		add_filter("gform_confirmation", array('GFSalesforceWebToLead', 'confirmation_error'));
+    }
+    
+     public static function is_gravity_forms_installed($asd = '', $echo = true) {
+		global $pagenow, $page, $showed_is_gravity_forms_installed; $message = '';
+		
+		$installed = 0;
+		$name = self::$name;
+		if(!class_exists('RGForms')) {
+			if(file_exists(WP_PLUGIN_DIR.'/gravityforms/gravityforms.php')) {
+				$installed = 1;
+				$message .= __(sprintf('%sGravity Forms is installed but not active. %sActivate Gravity Forms%s to use the %s plugin.%s', '<p>', '<strong><a href="'.wp_nonce_url(admin_url('plugins.php?action=activate&plugin=gravityforms/gravityforms.php'), 'activate-plugin_gravityforms/gravityforms.php').'">', '</a></strong>', $name,'</p>'), 'gravity-forms-salesforce');
+			} else {
+				$message .= <<<EOD
+<p><a href="http://katz.si/gravityforms?con=banner" title="Gravity Forms Contact Form Plugin for WordPress"><img src="http://gravityforms.s3.amazonaws.com/banners/728x90.gif" alt="Gravity Forms Plugin for WordPress" width="728" height="90" style="border:none;" /></a></p>
+		<h3><a href="http://katz.si/gravityforms" target="_blank">Gravity Forms</a> is required for the $name</h3>
+		<p>You do not have the Gravity Forms plugin installed. <a href="http://katz.si/gravityforms">Get Gravity Forms</a> today.</p>
+EOD;
+			}
+			
+			if(empty($showed_is_gravity_forms_installed)) {
+				echo '<div id="message" class="updated">'.$message.'</div>';
+				$showed_is_gravity_forms_installed = true;
+			}
+		} else {
+			return true;
+		}
+		return $installed;
+	}
+	
+	public static function plugin_row(){
+        if(!self::is_gravityforms_supported()){
+            $message = sprintf(__("%sGravity Forms%s is required. %sPurchase it today!%s"), "<a href='http://katz.si/gravityforms'>", "</a>", "<a href='http://katz.si/gravityforms'>", "</a>");
+            self::display_plugin_message($message, true);
+        }
+    }
+    
+    public static function display_plugin_message($message, $is_error = false){
+    	$style = '';
+        if($is_error)
+            $style = 'style="background-color: #ffebe8;"';
+
+        echo '</tr><tr class="plugin-update-tr"><td colspan="5" class="plugin-update"><div class="update-message" ' . $style . '>' . $message . '</div></td>';
     }
     
 	public function add_salesforce_editor_field($position, $form_id) {
@@ -98,7 +167,7 @@ class GFSalesforce {
 <style type="text/css">
 	td a.row-title span.salesforce_enabled {
 		position: absolute;
-		background: url('<?php echo WP_PLUGIN_URL.'/'.str_replace(basename( __FILE__),"",plugin_basename(__FILE__)); ?>/salesforce-16x16.png') right top no-repeat;
+		background: url('<?php echo WP_PLUGIN_URL.'/'.str_replace(basename( __FILE__),"",plugin_basename(__FILE__)); ?>/images/salesforce-16x16.png') right top no-repeat;
 		height: 16px;
 		width: 16px;
 		margin-left: 10px;
@@ -129,7 +198,7 @@ class GFSalesforce {
 	#gform_title .salesforce,
 	#gform_enable_salesforce_label {
 		float:right;
-		background: url('<?php echo WP_PLUGIN_URL.'/'.str_replace(basename( __FILE__),"",plugin_basename(__FILE__)); ?>/salesforce-16x16.png') right top no-repeat;
+		background: url('<?php echo WP_PLUGIN_URL.'/'.str_replace(basename( __FILE__),"",plugin_basename(__FILE__)); ?>/images/salesforce-16x16.png') right top no-repeat;
 		height: 16px;
 		width: 16px;
 		cursor: help;
@@ -189,7 +258,7 @@ class GFSalesforce {
     private static function is_salesforce_page(){
     	if(empty($_GET["page"])) { return false; }
         $current_page = trim(strtolower($_GET["page"]));
-        $salesforce_pages = array("gf_salesforce");
+        $salesforce_pages = array("gf_salesforce_webtolead");
 
         return in_array($current_page, $salesforce_pages);
     }
@@ -200,13 +269,14 @@ class GFSalesforce {
         // Adding submenu if user has access
         $permission = self::has_access("gravityforms_salesforce");
         if(!empty($permission))
-            $menus[] = array("name" => "gf_salesforce", "label" => __("Salesforce", "gravityformssalesforce"), "callback" =>  array("GFSalesforce", "salesforce_page"), "permission" => $permission);
+            $menus[] = array("name" => "gf_salesforce_webtolead", "label" => __("<span style='line-height:1.1; white-space:nowrap;'>Salesforce Web to Lead</span>", "gravityformssalesforce"), "callback" =>  array("GFSalesforceWebToLead", "salesforce_page"), "permission" => $permission);
 
         return $menus;
     }
 
     public static function settings_page(){
 		$message = $validimage = false; global $plugin_page;
+#		if(isset($_GET['addon'])) { return; }
         if(!empty($_POST["uninstall"])){
             check_admin_referer("uninstall", "gf_salesforce_uninstall");
             self::uninstall();
@@ -249,16 +319,17 @@ class GFSalesforce {
             .ol-decimal li { list-style: decimal!important; }
         </style>
 		<div class="wrap">
+		<img alt="<?php _e("Salesforce.com Feeds", "gravity-forms-salesforce") ?>" src="<?php echo self::get_base_url()?>/images/salesforce-50x50.png" style="float:left; margin:0 7px 0 0;" width="50" height="50" />
 		<?php 
 			if($plugin_page !== 'gf_settings') {
 			
-				echo '<h2>'.__('Gravity Forms Salesforce Add-on',"gravityformssalesforce").'</h2>';
+				echo '<h2>'.__('Salesforce.com Web to Lead Configuration',"gravityformssalesforce").'</h2>';
 			}
 			if($message) { 
 				echo "<div class='fade below-h2 {$class}'>".wpautop($message)."</div>";
 			} ?>
 			
-        <form method="post" action="">
+        <form method="post" action="" style="margin: 30px 0 30px; clear:both;">
             <?php wp_nonce_field("update", "gf_salesforce_update") ?>
             <h3><?php _e("Salesforce Account Information", "gravityformssalesforce") ?></h3>
             <p style="text-align: left;">
@@ -660,7 +731,7 @@ For more information on custom fields, %sread this Salesforce.com Help Article%s
 
     public static function uninstall(){
 
-        if(!GFSalesforce::has_access("gravityforms_salesforce_uninstall"))
+        if(!GFSalesforceWebToLead::has_access("gravityforms_salesforce_uninstall"))
             (__("You don't have adequate permission to uninstall Salesforce Add-On.", "gravityformssalesforce"));
 
         //removing options
@@ -686,23 +757,6 @@ For more information on custom fields, %sread this Salesforce.com Help Article%s
         }
     }
 
-	public static function is_gravity_forms_installed() {
-		global $pagenow, $page; $message = '';
-
-		if($pagenow != 'plugins.php') { return;}
-
-		if(!class_exists('RGForms')) {
-			if(file_exists(WP_PLUGIN_DIR.'/gravityforms/gravityforms.php')) {
-				$message .= '<p>Gravity Forms is installed but not active. <strong>Activate Gravity Forms</strong> to use the Gravity Forms Salesforce plugin.</p>';
-			} else {
-				$message .= '<h2><a href="http://katz.si/gravityforms">Gravity Forms</a> is required.</h2><p>You do not have the Gravity Forms plugin enabled. <a href="http://katz.si/gravityforms">Get Gravity Forms</a>.</p>';
-			}
-		}
-		if(!empty($message)) {
-			echo '<div id="message" class="error">'.$message.'</div>';
-		}
-	}
-	
     protected static function has_access($required_permission){
         $has_members_plugin = function_exists('members_get_capabilities');
         $has_access = $has_members_plugin ? current_user_can($required_permission) : current_user_can("level_7");
