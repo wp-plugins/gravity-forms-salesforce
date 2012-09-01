@@ -105,7 +105,7 @@ class GFSalesforceWebToLead {
 EOD;
 			}
 			
-			if(empty($showed_is_gravity_forms_installed)) {
+			if(empty($showed_is_gravity_forms_installed) && did_action('admin_init')) {
 				echo '<div id="message" class="updated">'.$message.'</div>';
 				$showed_is_gravity_forms_installed = true;
 			}
