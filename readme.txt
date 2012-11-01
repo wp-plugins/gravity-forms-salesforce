@@ -3,7 +3,7 @@ Tags: gravity forms, forms, gravity, form, crm, gravity form, salesforce, salesf
 Requires at least: 2.8
 Tested up to: 3.4.1
 Stable tag: trunk
-Contributors: katzwebdesign
+Contributors: katzwebdesign,katzwebservices
 Donate link:https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=zackkatz%40gmail%2ecom&item_name=Gravity%20Forms%20Salesforce%20Addon&no_shipping=0&no_note=1&tax=0&currency_code=USD&lc=US&bn=PP%2dDonationsBF&charset=UTF%2d8
 
 Integrate the remarkable Gravity Forms plugin with Salesforce.
@@ -31,8 +31,9 @@ If you have questions, comments, or issues with this plugin, <strong>please leav
 
 == Screenshots ==
 
-1. The Gravity Forms Salesforce Add-on settings page
-2. It's easy to integrate Gravity Forms with Salesforce: check a box in the "Advanced" tab of a form's Form Settings
+1. Configure Salesforce field mapping. Set up custom objects.
+1. Integrate with more than one form.
+3. Salesforce.com settings page
 
 == Installation == 
 
@@ -82,6 +83,9 @@ You can find your Custom Fields under [Your Name] &rarr; Setup &rarr; Leads &rar
 This plugin is released under a GPL license.
 
 == Changelog ==
+
+= 2.0.1 =
+* Renamed the plugin files so that you wouldn't need to re-activate.
 
 = 2.0 =
 * Added API plugin. A complete rewrite; switched to SOAP API. Will require re-configuring the plugin.
