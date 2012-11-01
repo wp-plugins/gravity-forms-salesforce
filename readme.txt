@@ -1,7 +1,7 @@
 === Gravity Forms Salesforce Add-on ===
 Tags: gravity forms, forms, gravity, form, crm, gravity form, salesforce, salesforce plugin, form, forms, gravity, gravity form, gravity forms, secure form, simplemodal contact form, wp contact form, widget, sales force, customer, contact, contacts, address, addresses, address book
 Requires at least: 2.8
-Tested up to: 3.4.1
+Tested up to: 3.5 beta2
 Stable tag: trunk
 Contributors: katzwebdesign,katzwebservices
 Donate link:https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=zackkatz%40gmail%2ecom&item_name=Gravity%20Forms%20Salesforce%20Addon&no_shipping=0&no_note=1&tax=0&currency_code=USD&lc=US&bn=PP%2dDonationsBF&charset=UTF%2d8
@@ -84,6 +84,9 @@ This plugin is released under a GPL license.
 
 == Changelog ==
 
+= 2.0.2 =
+* Fixed issue with HTML encoding to <a href="http://wordpress.org/support/topic/submitting?replies=2">fix SOAP fatal error</a>. Thanks, gmcinnes!
+
 = 2.0.1 =
 * Renamed the plugin files so that you wouldn't need to re-activate.
 
@@ -114,6 +117,8 @@ This plugin is released under a GPL license.
 
 == Upgrade Notice ==
 
+= 2.0.2 =
+* Fixed issue with HTML encoding to <a href="http://wordpress.org/support/topic/submitting?replies=2">fix SOAP fatal error</a>. Thanks, gmcinnes!
 
 = 2.0 =
 * Complete rewrite; switched to SOAP API. Will require re-configuring the plugin.
