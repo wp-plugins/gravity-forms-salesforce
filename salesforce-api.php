@@ -3,7 +3,7 @@
 Plugin Name: Gravity Forms Salesforce API Add-On
 Plugin URI: http://www.seodenver.com/salesforce/
 Description: Integrates Gravity Forms with Salesforce allowing form submissions to be automatically sent to your Salesforce account
-Version: 2.0.2
+Version: 2.1
 Author: Katz Web Services, Inc.
 Author URI: http://www.katzwebservices.com
 
@@ -29,34 +29,35 @@ add_action('init',  array('GFSalesforce', 'init'));
 register_activation_hook( __FILE__, array("GFSalesforce", "add_permissions"));
 
 class GFSalesforce {
-	
-	private static $name = "Gravity Forms Salesforce Add-On";
-	private static $api = '';
+
+    private static $name = "Gravity Forms Salesforce Add-On";
+    private static $api = '';
     private static $path = "gravity-forms-salesforce/salesforce.php";
     private static $url = "http://formplugin.com";
     private static $slug = "gravity-forms-salesforce";
-    private static $version = "2.0.2";
+    private static $version = "2.1";
     private static $min_gravityforms_version = "1.3.9";
+    private static $is_debug = NULL;
 
     //Plugin starting point. Will load appropriate files
     public static function init(){
-		global $pagenow;
-		
-		if($pagenow === 'plugins.php') {
-			add_action("admin_notices", array('GFSalesforce', 'is_gravity_forms_installed'), 10);
-		}
-		
-		if(self::is_gravity_forms_installed(false, false) === 0){
-			add_action('after_plugin_row_' . self::$path, array('GFSalesforce', 'plugin_row') );
+        global $pagenow;
+
+        if($pagenow === 'plugins.php') {
+            add_action("admin_notices", array('GFSalesforce', 'is_gravity_forms_installed'), 10);
+        }
+
+        if(self::is_gravity_forms_installed(false, false) === 0){
+            add_action('after_plugin_row_' . self::$path, array('GFSalesforce', 'plugin_row') );
            return;
         }
-		
+
         if($pagenow == 'plugins.php' || defined('RG_CURRENT_PAGE') && RG_CURRENT_PAGE == "plugins.php"){
             //loading translations
             load_plugin_textdomain('gravity-forms-salesforce', FALSE, '/gravity-forms-salesforce/languages' );
 
             add_filter('plugin_action_links', array('GFSalesforce', 'settings_link'), 10, 2 );
-    
+
         }
 
         if(!self::is_gravityforms_supported()){
@@ -113,52 +114,53 @@ class GFSalesforce {
              //handling post submission.
             add_action("gform_post_submission", array('GFSalesforce', 'export'), 10, 2);
         }
+        add_action('gform_entry_info', array('GFSalesforce', 'entry_info_link_to_salesforce'), 10, 2);
     }
-    
+
     public static function is_gravity_forms_installed($asd = '', $echo = true) {
-		global $pagenow, $page, $showed_is_gravity_forms_installed; $message = '';
-		
-		$installed = 0;
-		$name = self::$name;
-		if(!class_exists('RGForms')) {
-			if(file_exists(WP_PLUGIN_DIR.'/gravityforms/gravityforms.php')) {
-				$installed = 1;
-				$message .= __(sprintf('%sGravity Forms is installed but not active. %sActivate Gravity Forms%s to use the %s plugin.%s', '<p>', '<strong><a href="'.wp_nonce_url(admin_url('plugins.php?action=activate&plugin=gravityforms/gravityforms.php'), 'activate-plugin_gravityforms/gravityforms.php').'">', '</a></strong>', $name,'</p>'), 'gravity-forms-salesforce');
-			} else {
-				$message .= <<<EOD
+        global $pagenow, $page, $showed_is_gravity_forms_installed; $message = '';
+
+        $installed = 0;
+        $name = self::$name;
+        if(!class_exists('RGForms')) {
+            if(file_exists(WP_PLUGIN_DIR.'/gravityforms/gravityforms.php')) {
+                $installed = 1;
+                $message .= __(sprintf('%sGravity Forms is installed but not active. %sActivate Gravity Forms%s to use the %s plugin.%s', '<p>', '<strong><a href="'.wp_nonce_url(admin_url('plugins.php?action=activate&plugin=gravityforms/gravityforms.php'), 'activate-plugin_gravityforms/gravityforms.php').'">', '</a></strong>', $name,'</p>'), 'gravity-forms-salesforce');
+            } else {
+                $message .= <<<EOD
 <p><a href="http://katz.si/gravityforms?con=banner" title="Gravity Forms Contact Form Plugin for WordPress"><img src="http://gravityforms.s3.amazonaws.com/banners/728x90.gif" alt="Gravity Forms Plugin for WordPress" width="728" height="90" style="border:none;" /></a></p>
-		<h3><a href="http://katz.si/gravityforms" target="_blank">Gravity Forms</a> is required for the $name</h3>
-		<p>You do not have the Gravity Forms plugin installed. <a href="http://katz.si/gravityforms">Get Gravity Forms</a> today.</p>
+        <h3><a href="http://katz.si/gravityforms" target="_blank">Gravity Forms</a> is required for the $name</h3>
+        <p>You do not have the Gravity Forms plugin installed. <a href="http://katz.si/gravityforms">Get Gravity Forms</a> today.</p>
 EOD;
-			}
-			
-			if(!empty($message) && $echo) {
-				if(empty($showed_is_gravity_forms_installed)) {
-					echo '<div id="message" class="updated">'.$message.'</div>';
-					$showed_is_gravity_forms_installed = true;
-				}
-			}
-		} else {
-			return true;
-		}
-		return $installed;
-	}
-	
-	public static function plugin_row(){
+            }
+
+            if(!empty($message) && $echo) {
+                if(empty($showed_is_gravity_forms_installed)) {
+                    echo '<div id="message" class="updated">'.$message.'</div>';
+                    $showed_is_gravity_forms_installed = true;
+                }
+            }
+        } else {
+            return true;
+        }
+        return $installed;
+    }
+
+    public static function plugin_row(){
         if(!self::is_gravityforms_supported()){
             $message = sprintf(__("%sGravity Forms%s is required. %sPurchase it today!%s"), "<a href='http://katz.si/gravityforms'>", "</a>", "<a href='http://katz.si/gravityforms'>", "</a>");
             self::display_plugin_message($message, true);
         }
     }
-    
+
     public static function display_plugin_message($message, $is_error = false){
-    	$style = '';
+        $style = '';
         if($is_error)
             $style = 'style="background-color: #ffebe8;"';
 
         echo '</tr><tr class="plugin-update-tr"><td colspan="5" class="plugin-update"><div class="update-message" ' . $style . '>' . $message . '</div></td>';
     }
-    
+
     public static function update_feed_active(){
         check_ajax_referer('rg_update_feed_active','rg_update_feed_active');
         $id = $_POST["feed_id"];
@@ -167,7 +169,7 @@ EOD;
     }
 
     //--------------   Automatic upgrade ---------------------------------------------------
-    
+
     function settings_link( $links, $file ) {
         static $this_plugin;
         if( ! $this_plugin ) $this_plugin = self::get_base_url();
@@ -179,17 +181,17 @@ EOD;
         }
         return $links;
     }
-    
-    
+
+
     //Returns true if the current page is an Feed pages. Returns false if not
     private static function is_salesforce_page(){
-    	global $plugin_page; $current_page = '';
+        global $plugin_page; $current_page = '';
         $salesforce_pages = array("gf_salesforce");
-        
+
         if(isset($_GET['page'])) {
-			$current_page = trim(strtolower($_GET["page"]));
-		}
-		
+            $current_page = trim(strtolower($_GET["page"]));
+        }
+
         return (in_array($plugin_page, $salesforce_pages) || in_array($current_page, $salesforce_pages));
     }
 
@@ -225,15 +227,28 @@ EOD;
 
         return $menus;
     }
-    
+
     public static function is_debug() {
-        $settings = get_option("gf_salesforce_settings");
-	    return !empty($settings['debug']) && current_user_can('manage_options');
+        if(is_null(self::$is_debug)) {
+            $settings = get_option("gf_salesforce_settings");
+            self::$is_debug = !empty($settings['debug']) && current_user_can('manage_options');
+        }
+        return self::$is_debug;
     }
-    
+
+    public static function is_notify_on_error() {
+        $settings = get_option("gf_salesforce_settings");
+        $settings['notifyemail'] = trim(rtrim($settings['notifyemail']));
+        if(!empty($settings['notifyemail']) && is_email($settings['notifyemail'])) {
+            return $settings['notifyemail'];
+        } else {
+            return false;
+        }
+    }
+
     public static function settings_page(){
-		
-		
+
+
         if(isset($_POST["uninstall"])){
             check_admin_referer("uninstall", "gf_salesforce_uninstall");
             self::uninstall();
@@ -245,66 +260,69 @@ EOD;
         }
         else if(isset($_POST["gf_salesforce_submit"])){
             check_admin_referer("update", "gf_salesforce_update");
-           	$settings = array(
-            	"username" => stripslashes($_POST["gf_salesforce_username"]), 
-            	"password" => stripslashes($_POST["gf_salesforce_password"]), 
-            	"securitytoken" => stripslashes($_POST["gf_salesforce_securitytoken"]),
-            	"debug" => isset($_POST["gf_salesforce_debug"])
+            $settings = array(
+                "username" => stripslashes($_POST["gf_salesforce_username"]),
+                "password" => stripslashes($_POST["gf_salesforce_password"]),
+                "securitytoken" => stripslashes($_POST["gf_salesforce_securitytoken"]),
+                "debug" => isset($_POST["gf_salesforce_debug"]),
+                "notifyemail" => trim(rtrim(esc_html($_POST["gf_salesforce_notifyemail"]))),
             );
             update_option("gf_salesforce_settings", $settings);
         }
         else{
             $settings = get_option("gf_salesforce_settings");
         }
-        
+
         $settings = wp_parse_args($settings, array(
-            	"username" => '', 
-            	"password" => '', 
-            	'securitytoken' => '',
-            	"debug" => false,
+                "username" => '',
+                "password" => '',
+                'securitytoken' => '',
+                "debug" => false,
+                'notify' => false,
+                "notifyemail" => ''
             ));
-          
-        $api = self::get_api($settings);	
-		
-		
+
+        $api = self::get_api($settings);
+
+
         $message = '';
-		
-		if(!empty($settings["username"]) && !empty($settings["password"]) && !empty($api) && is_object($api)){
+
+        if(!empty($settings["username"]) && !empty($settings["password"]) && !empty($api) && is_object($api)){
             $message = sprintf(__("Valid configuration. Now go %sconfigure form integration with Salesforce%s!", "gravity-forms-salesforce"), '<a href="'.admin_url('admin.php?page=gf_salesforce').'">', '</a>');
             $class = "updated valid_credentials";
             $valid = true;
         } else if(!empty($settings["username"]) || !empty($settings["password"])){
-        	$message = is_string($api) ? $api : '';
-        	$valid = false;
+            $message = is_string($api) ? $api : '';
+            $valid = false;
             $class = "error invalid_credentials";
         } else if (empty($settings["username"]) && empty($settings["password"])) {
-			$message = '';
-			$valid = false;
-			$class = 'updated notice';
+            $message = '';
+            $valid = false;
+            $class = 'updated notice';
         }
 
-		if($message) {
-			$message = str_replace('Api', 'API', $message);
-	        ?>
-	        <div id="message" class="<?php echo $class ?>"><?php echo wpautop($message); ?></div>
-	        <?php 
+        if($message) {
+            $message = str_replace('Api', 'API', $message);
+            ?>
+            <div id="message" class="<?php echo $class ?>"><?php echo wpautop($message); ?></div>
+            <?php
         }
         ?>
         <form method="post" action="<?php echo remove_query_arg('refresh'); ?>">
             <?php wp_nonce_field("update", "gf_salesforce_update") ?>
             <?php if(!$valid)  { ?>
             <div class="delete-alert alert_gray">
-            	<h4><?php _e(sprintf('If you have issues with these steps, please %scontact Salesforce%s by calling (877) 820-7837 in the US or (919) 957-6150.', '<a href="http://www.salesforce.com/contact">', '</a>'), "gravity-forms-salesforce"); ?></h4>
-            	<h3><?php _e('How to set up integration:', "gravity-forms-salesforce"); ?></h3>
-            	<ol class="ol-decimal" style="margin-top:1em;">
-            		<li style="list-style:decimal outside;"><?php echo sprintf(__('If you don\'t have your security token, %sfollow this link to Reset Your Security Token%s', "gravity-forms-salesforce"), '<a href="https://na9.salesforce.com/_ui/system/security/ResetApiTokenEdit" target="_blank">', '</a>', "gravity-forms-salesforce") ?></li>
-            		<li style="list-style:decimal outside;"><?php _e('Come back to this settings page and enter your Security Token, Salesforce.com Username and Password.', "gravity-forms-salesforce") ?></li>
-					<li style="list-style:decimal outside;"><?php _e('Save these settings, and you should be done!', "gravity-forms-salesforce") ?></li>
-				</ol>
-			</div>
+                <h4><?php _e(sprintf('If you have issues with these steps, please %scontact Salesforce%s by calling (877) 820-7837 in the US or (919) 957-6150.', '<a href="http://www.salesforce.com/contact">', '</a>'), "gravity-forms-salesforce"); ?></h4>
+                <h3><?php _e('How to set up integration:', "gravity-forms-salesforce"); ?></h3>
+                <ol class="ol-decimal" style="margin-top:1em;">
+                    <li style="list-style:decimal outside;"><?php echo sprintf(__('If you don\'t have your security token, %sfollow this link to Reset Your Security Token%s', "gravity-forms-salesforce"), '<a href="https://na9.salesforce.com/_ui/system/security/ResetApiTokenEdit" target="_blank">', '</a>', "gravity-forms-salesforce") ?></li>
+                    <li style="list-style:decimal outside;"><?php _e('Come back to this settings page and enter your Security Token, Salesforce.com Username and Password.', "gravity-forms-salesforce") ?></li>
+                    <li style="list-style:decimal outside;"><?php _e('Save these settings, and you should be done!', "gravity-forms-salesforce") ?></li>
+                </ol>
+            </div>
             <?php } ?>
             <h3><?php _e("Salesforce Account Information", "gravity-forms-salesforce") ?></h3>
-            
+
             <table class="form-table">
                 <tr>
                     <th scope="row"><label for="gf_salesforce_securitytoken"><?php _e("Security Token", "gravity-forms-salesforce"); ?></label> </th>
@@ -321,6 +339,13 @@ EOD;
                 <tr>
                     <th scope="row"><label for="gf_salesforce_debug"><?php _e("Debug Form Submissions for Administrators", "gravity-forms-salesforce"); ?></label> </th>
                     <td><input type="checkbox" id="gf_salesforce_debug" name="gf_salesforce_debug" size="40" value="1" <?php checked($settings["debug"], true); ?>/></td>
+                </tr>
+                <tr>
+                    <th scope="row"><label for="gf_salesforce_notifyemail"><?php _e("Notify by Email on Errors", "gravity-forms-salesforce"); ?></label></th>
+                    <td>
+                        <input type="text" id="gf_salesforce_notifyemail" name="gf_salesforce_notifyemail" size="30" value="<?php echo empty($settings["notifyemail"]) ? '' : esc_attr($settings["notifyemail"]); ?>"/>
+                        <span class="howto"><?php _e('An email will be sent to this email address if an entry is not properly added to Salesforce. Leave blank to disable.', 'gravity-forms-salesforce'); ?></span>
+                    </td>
                 </tr>
                 <tr>
                     <td colspan="2" ><input type="submit" name="gf_salesforce_submit" class="button-primary" value="<?php _e("Save Settings", "gravity-forms-salesforce") ?>" /></td>
@@ -390,11 +415,16 @@ EOD;
             <h2><?php _e("Salesforce.com Feeds", "gravity-forms-salesforce"); ?>
             <a class="button add-new-h2" href="admin.php?page=gf_salesforce&view=edit&id=0"><?php _e("Add New", "gravity-forms-salesforce") ?></a>
             </h2>
-			<div class="clear"></div>
-			<ul class="subsubsub">
-	            <li><a href="<?php echo admin_url('admin.php?page=gf_settings&addon=Salesforce'); ?>">Salesforce Settings</a> |</li>
-	            <li><a href="<?php echo admin_url('admin.php?page=gf_salesforce'); ?>" class="current">Salesforce Feeds</a></li>
-	        </ul>
+
+            <div class="updated" id="message" style="margin-top:20px;">
+                <p><?php _e('Do you like this free plugin? <a href="http://katz.si/gfsfrate">Please review it on WordPress.org</a>! <small class="description alignright">Note: You must be logged in to WordPress.org to leave a review!</small>', 'gravity-forms-salesforce'); ?></p>
+            </div>
+
+            <div class="clear"></div>
+            <ul class="subsubsub" style="margin-top:0;">
+                <li><a href="<?php echo admin_url('admin.php?page=gf_settings&addon=Salesforce'); ?>">Salesforce Settings</a> |</li>
+                <li><a href="<?php echo admin_url('admin.php?page=gf_salesforce'); ?>" class="current">Salesforce Feeds</a></li>
+            </ul>
 
             <form id="feed_form" method="post">
                 <?php wp_nonce_field('list_action', 'gf_salesforce_list') ?>
@@ -461,27 +491,27 @@ EOD;
                                 <?php
                             }
                         }
-                        else { 
-                        	$api = self::get_api();
-	                        if(!empty($api) && empty($api->lastError)){
-	                            ?>
-	                            <tr>
-	                                <td colspan="4" style="padding:20px;">
-	                                    <?php _e(sprintf("You don't have any Salesforce feeds configured. Let's go %screate one%s!", '<a href="'.admin_url('admin.php?page=gf_salesforce&view=edit&id=0').'">', "</a>"), "gravity-forms-salesforce"); ?>
-	                                </td>
-	                            </tr>
-	                            <?php
-	                        }
-	                        else{
-	                            ?>
-	                            <tr>
-	                                <td colspan="4" style="padding:20px;">
-	                                    <?php _e(sprintf("To get started, please configure your %sSalesforce Settings%s.", '<a href="admin.php?page=gf_settings&addon=Salesforce">', "</a>"), "gravity-forms-salesforce"); ?>
-	                                </td>
-	                            </tr>
-	                            <?php
-	                        }
-	                    }
+                        else {
+                            $api = self::get_api();
+                            if(!empty($api) && empty($api->lastError)){
+                                ?>
+                                <tr>
+                                    <td colspan="4" style="padding:20px;">
+                                        <?php _e(sprintf("You don't have any Salesforce feeds configured. Let's go %screate one%s!", '<a href="'.admin_url('admin.php?page=gf_salesforce&view=edit&id=0').'">', "</a>"), "gravity-forms-salesforce"); ?>
+                                    </td>
+                                </tr>
+                                <?php
+                            }
+                            else{
+                                ?>
+                                <tr>
+                                    <td colspan="4" style="padding:20px;">
+                                        <?php _e(sprintf("To get started, please configure your %sSalesforce Settings%s.", '<a href="admin.php?page=gf_settings&addon=Salesforce">', "</a>"), "gravity-forms-salesforce"); ?>
+                                    </td>
+                                </tr>
+                                <?php
+                            }
+                        }
                         ?>
                     </tbody>
                 </table>
@@ -523,103 +553,103 @@ EOD;
 
     private static function get_api($settings = array()){
         if(!class_exists("SforcePartnerClient")) {
-			require_once plugin_dir_path(__FILE__).'developerforce/include/SforcePartnerClient.php';
+            require_once plugin_dir_path(__FILE__).'developerforce/include/SforcePartnerClient.php';
         }
-        
+
         // If it's already set, use it.
         if(!empty(self::$api)) { return self::$api; }
-        
-		if(!is_array($settings) || empty($settings)) {
-			$settings = get_option("gf_salesforce_settings");
-		}
-		
-		extract($settings);
-		
-		try {
-			//This is instantiating the service used for the sfdc api
-			$conn = new SforcePartnerClient();
-			$conn->createconnection(plugin_dir_path(__FILE__).'developerforce/include/partner.wsdl.xml'); 
-			$mylogin = $conn->login($username,$password.$securitytoken);
-			self::$api = $conn;
-			return $conn;
-		} catch(Exception $e) {
-			return isset($e->faultstring) ? $e->faultstring : false;
-		}		
+
+        if(!is_array($settings) || empty($settings)) {
+            $settings = get_option("gf_salesforce_settings");
+        }
+
+        extract($settings);
+
+        try {
+            //This is instantiating the service used for the sfdc api
+            $conn = new SforcePartnerClient();
+            $conn->createconnection(plugin_dir_path(__FILE__).'developerforce/include/partner.wsdl.xml');
+            $mylogin = $conn->login($username,$password.$securitytoken);
+            self::$api = $conn;
+            return $conn;
+        } catch(Exception $e) {
+            return isset($e->faultstring) ? $e->faultstring : false;
+        }
     }
-    
+
     public function getFields($objectType = 'account') {
-    			// One of two options: fields or objects
-		$listtype = ($listtype !== 'objects') ? 'fields' : 'objects';
-		
-		$lists = get_site_transient('sfgf_lists_fields_'.$objectType);
-		if($lists && (!isset($_REQUEST['refresh']) || (isset($_REQUEST['refresh']) && $_REQUEST['refresh'] !== 'lists'))) {
-			return $lists;
-		}
-		
-		$api = self::get_api();
-		
-		if(!$api) { return false; }
-		
-		$accountdescribe = $api->describeSObject($objectType);
-		
-		if(!is_object($accountdescribe) || !isset($accountdescribe->fields)) { return false; }
-		
-		$lists = array();
-		foreach($accountdescribe->fields as $Field) {
-			
-			if(!is_object($Field)) { continue; }
-			
-			$lists[] = array(
-				'name' => esc_js($Field->label),
-				'req' => (!empty($Field->createable) && empty($Field->nillable) && empty($Field->defaultedOnCreate)),
-				'tag' => esc_js($Field->name),
-				'type' => $Field->type,
-				'length' => $Field->length,
-			);
-		}
+                // One of two options: fields or objects
+        $listtype = ($listtype !== 'objects') ? 'fields' : 'objects';
 
-		asort($lists);
-		
-		set_site_transient('sfgf_lists_fields_'.$objectType, $lists);
-		
-		return $lists;
+        $lists = get_site_transient('sfgf_lists_fields_'.$objectType);
+        if($lists && (!isset($_REQUEST['refresh']) || (isset($_REQUEST['refresh']) && $_REQUEST['refresh'] !== 'lists'))) {
+            return $lists;
+        }
+
+        $api = self::get_api();
+
+        if(!$api) { return false; }
+
+        $accountdescribe = $api->describeSObject($objectType);
+
+        if(!is_object($accountdescribe) || !isset($accountdescribe->fields)) { return false; }
+
+        $lists = array();
+        foreach($accountdescribe->fields as $Field) {
+
+            if(!is_object($Field)) { continue; }
+
+            $lists[] = array(
+                'name' => esc_js($Field->label),
+                'req' => (!empty($Field->createable) && empty($Field->nillable) && empty($Field->defaultedOnCreate)),
+                'tag' => esc_js($Field->name),
+                'type' => $Field->type,
+                'length' => $Field->length,
+            );
+        }
+
+        asort($lists);
+
+        set_site_transient('sfgf_lists_fields_'.$objectType, $lists);
+
+        return $lists;
     }
-    
-    public function getObjectTypes() {
-		
-		$lists = get_site_transient('sfgf_objects');
-		
-		if($lists && (!isset($_REQUEST['refresh']) || (isset($_REQUEST['refresh']) && $_REQUEST['refresh'] !== 'lists'))) {
-			return $lists;
-		}
-		
-		$api = self::get_api();
-		
-		if(!$api) { return false; }
-		
-		$accountdescribe = $api->describeSObject("account");
-		
-		if(!is_object($accountdescribe) || !isset($accountdescribe->childRelationships)) { return false; }
-		
-		$lists = array();
-		foreach($accountdescribe->childRelationships as $Relationship) {
-			if(!in_array($Relationship->childSObject, $lists)) {
-				$lists[] = $Relationship->childSObject;
-			}
-		}
 
-		asort($lists);
-		
-		set_site_transient('sfgf_objects', $lists);
-		
-		return $lists;
-		
-	}
+    public function getObjectTypes() {
+
+        $lists = get_site_transient('sfgf_objects');
+
+        if($lists && (!isset($_REQUEST['refresh']) || (isset($_REQUEST['refresh']) && $_REQUEST['refresh'] !== 'lists'))) {
+            return $lists;
+        }
+
+        $api = self::get_api();
+
+        if(!$api) { return false; }
+
+        $accountdescribe = $api->describeSObject("account");
+
+        if(!is_object($accountdescribe) || !isset($accountdescribe->childRelationships)) { return false; }
+
+        $lists = array();
+        foreach($accountdescribe->childRelationships as $Relationship) {
+            if(!in_array($Relationship->childSObject, $lists)) {
+                $lists[] = $Relationship->childSObject;
+            }
+        }
+
+        asort($lists);
+
+        set_site_transient('sfgf_objects', $lists);
+
+        return $lists;
+
+    }
 
     private static function edit_page(){
         ?>
         <style type="text/css">
-        	label span.howto { cursor: default; }
+            label span.howto { cursor: default; }
             .salesforce_col_heading{padding-bottom:2px; border-bottom: 1px solid #ccc; font-weight:bold; width:50%;}
             #salesforce_field_list table { width: 400px; border-collapse: collapse; margin-top: 1em; }
             .salesforce_field_cell {padding: 6px 17px 0 0; margin-right:15px;}
@@ -641,15 +671,15 @@ EOD;
             <img alt="<?php _e("Salesforce Feeds", "gravity-forms-salesforce") ?>" src="<?php echo self::get_base_url()?>/images/salesforce-50x50.png" style="float:left; margin:15px 7px 0 0;"/>
             <h2><?php _e("Salesforce Feeds", "gravity-forms-salesforce"); ?></h2>
             <ul class="subsubsub">
-	            <li><a href="<?php echo admin_url('admin.php?page=gf_settings&addon=Salesforce'); ?>">Salesforce Settings</a> |</li>
-	            <li><a href="<?php echo admin_url('admin.php?page=gf_salesforce'); ?>">Salesforce Feeds</a></li>
-	        </ul>
-		<div class="clear"></div>
+                <li><a href="<?php echo admin_url('admin.php?page=gf_settings&addon=Salesforce'); ?>">Salesforce Settings</a> |</li>
+                <li><a href="<?php echo admin_url('admin.php?page=gf_salesforce'); ?>">Salesforce Feeds</a></li>
+            </ul>
+        <div class="clear"></div>
         <?php
         //getting Salesforce API
-        
+
         $api = self::get_api();
-        
+
         //ensures valid credentials were entered in the settings page
         if(($api === false) || is_string($api)) {
             ?>
@@ -661,23 +691,23 @@ EOD;
         //getting setting id (0 when creating a new one)
         $id = !empty($_POST["salesforce_setting_id"]) ? $_POST["salesforce_setting_id"] : absint($_GET["id"]);
         $config = empty($id) ? array("meta" => array(), "is_active" => true) : GFSalesforceData::get_feed($id);
-		
-	    //getting merge vars
+
+        //getting merge vars
         $merge_vars = array();
-		
-		//updating meta information
+
+        //updating meta information
         if(isset($_POST["gf_salesforce_submit"])){
-        	$objectType = $list_names = array();
-        	$list = stripslashes($_POST["gf_salesforce_list"]);
-			$config["meta"]["contact_object_name"] = $list;
+            $objectType = $list_names = array();
+            $list = stripslashes($_POST["gf_salesforce_list"]);
+            $config["meta"]["contact_object_name"] = $list;
             $config["form_id"] = absint($_POST["gf_salesforce_form"]);
 
             $is_valid = true;
 
             $merge_vars = self::getFields($_POST['gf_salesforce_list']);
-            
+
             $field_map = array();
-                        
+
             foreach($merge_vars as $var){
                 $field_name = "salesforce_map_field_" . $var['tag'];
                 $mapped_field = isset($_POST[$field_name]) ? stripslashes($_POST[$field_name]) : '';
@@ -687,24 +717,24 @@ EOD;
                 else{
                     unset($field_map[$var['tag']]);
                     if(!empty($var["req"])) {
-                    	$is_valid = false;
+                        $is_valid = false;
                     }
                 }
                 unset($_POST["{$field_name}"]);
             }
-            
-                        
-			$config["meta"]["field_map"] = $field_map;
+
+
+            $config["meta"]["field_map"] = $field_map;
             $config["meta"]["optin_enabled"] = !empty($_POST["salesforce_optin_enable"]) ? true : false;
             $config["meta"]["optin_field_id"] = $config["meta"]["optin_enabled"] ? isset($_POST["salesforce_optin_field_id"]) ? $_POST["salesforce_optin_field_id"] : '' : "";
             $config["meta"]["optin_operator"] = $config["meta"]["optin_enabled"] ? isset($_POST["salesforce_optin_operator"]) ? $_POST["salesforce_optin_operator"] : '' : "";
             $config["meta"]["optin_value"] = $config["meta"]["optin_enabled"] ? $_POST["salesforce_optin_value"] : "";
-			
+
             if($is_valid){
                 $id = GFSalesforceData::update_feed($id, $config["form_id"], $config["is_active"], $config["meta"]);
                 ?>
                 <div id="message" class="updated fade" style="margin-top:10px;"><p><?php echo sprintf(__("Feed Updated. %sback to list%s", "gravity-forms-salesforce"), "<a href='?page=gf_salesforce'>", "</a>") ?></p>
-	                <input type="hidden" name="salesforce_setting_id" value="<?php echo $id ?>"/>
+                    <input type="hidden" name="salesforce_setting_id" value="<?php echo $id ?>"/>
                 </div>
                 <?php
             }
@@ -714,21 +744,21 @@ EOD;
                 <?php
             }
         }
-		if(!function_exists('gform_tooltip')) {
-			require_once(GFCommon::get_base_path() . "/tooltips.php");
-		}
+        if(!function_exists('gform_tooltip')) {
+            require_once(GFCommon::get_base_path() . "/tooltips.php");
+        }
 ?>
         <form method="post" action="<?php echo remove_query_arg('refresh'); ?>">
             <input type="hidden" name="salesforce_setting_id" value="<?php echo $id ?>"/>
             <div class="margin_vertical_10">
-            	<h2><?php _e('1. Select the Object to create when a form is submitted.', "gravity-forms-salesforce"); ?></h2>
-                <label for="gf_salesforce_list" class="left_header"><?php _e("Salesforce Object", "gravity-forms-salesforce"); ?> <?php gform_tooltip("salesforce_contact_list") ?> <span class="howto"><?php _e(sprintf("%sRefresh lists%s", '<a href="'.add_query_arg('refresh', 'lists').'">','</a>'), "gravity-forms-salesforce"); ?></span></label>
-                
-<?php                
-				//getting all contact lists
-				$lists = self::getObjectTypes();
+                <h2><?php _e('1. Select the Object to create when a form is submitted.', "gravity-forms-salesforce"); ?></h2>
+                <label for="gf_salesforce_list" class="left_header"><?php _e("Salesforce Object", "gravity-forms-salesforce"); ?> <?php gform_tooltip("salesforce_contact_list") ?> <span class="howto"><?php _e(sprintf("%sRefresh objects & fields%s", '<a href="'.add_query_arg('refresh', 'lists').'">','</a>'), "gravity-forms-salesforce"); ?></span></label>
 
-				if(!$lists) {
+<?php
+                //getting all contact lists
+                $lists = self::getObjectTypes();
+
+                if(!$lists) {
                     echo __("Could not load Salesforce contact lists. <br/>Error: ", "gravity-forms-salesforce");
                     echo isset($api->errorMessage) ? $api->errorMessage : '';
                 } else {
@@ -743,39 +773,39 @@ EOD;
                     }
                     ?>
                   </select>
-                	
+
                   <script type="text/javascript">
-                 	if(jQuery('#lists_loading').length && jQuery('#gf_salesforce_list').length) {
-                 		jQuery('#lists_loading').fadeOut(function() { jQuery('#gf_salesforce_list').fadeIn(); });
-	                 } else if(jQuery('#gf_salesforce_list').length) {
-	                 	jQuery('#gf_salesforce_list').show();
-	                 }
+                    if(jQuery('#lists_loading').length && jQuery('#gf_salesforce_list').length) {
+                        jQuery('#lists_loading').fadeOut(function() { jQuery('#gf_salesforce_list').fadeIn(); });
+                     } else if(jQuery('#gf_salesforce_list').length) {
+                        jQuery('#gf_salesforce_list').show();
+                     }
                  </script>
                 <?php
                 }
                 ?>
                 <div class="clear"></div>
             </div>
-			<?php flush(); ?>
+            <?php flush(); ?>
             <div id="salesforce_form_container" valign="top" class="margin_vertical_10" <?php echo empty($config["meta"]["contact_object_name"]) ? "style='display:none;'" : "" ?>>
-            	<h2><?php _e('2. Select the form to tap into.', "gravity-forms-salesforce"); ?></h2>
-            	<?php
-            	$forms = RGFormsModel::get_forms();
-		
-				if(isset($config["form_id"])) {
-					foreach($forms as $form) {
-						if($form->id == $config["form_id"]) {
-							echo '<h3 style="margin:0; padding:0 0 1em 1.75em; font-weight:normal;">'.sprintf(__('(Currently linked with %s)', "gravity-forms-salesforce"), $form->title).'</h3>';
-						}
-					}
-				}
-				?>
+                <h2><?php _e('2. Select the form to tap into.', "gravity-forms-salesforce"); ?></h2>
+                <?php
+                $forms = RGFormsModel::get_forms();
+
+                if(isset($config["form_id"])) {
+                    foreach($forms as $form) {
+                        if($form->id == $config["form_id"]) {
+                            echo '<h3 style="margin:0; padding:0 0 1em 1.75em; font-weight:normal;">'.sprintf(__('(Currently linked with %s)', "gravity-forms-salesforce"), $form->title).'</h3>';
+                        }
+                    }
+                }
+                ?>
                 <label for="gf_salesforce_form" class="left_header"><?php _e("Gravity Form", "gravity-forms-salesforce"); ?> <?php gform_tooltip("salesforce_gravity_form") ?></label>
 
                 <select id="gf_salesforce_form" name="gf_salesforce_form" onchange="SelectForm(jQuery('#gf_salesforce_list').val(), jQuery(this).val());">
                 <option value=""><?php _e("Select a form", "gravity-forms-salesforce"); ?> </option>
                 <?php
-                
+
                 foreach($forms as $form){
                     $selected = absint($form->id) == $config["form_id"] ? "selected='selected'" : "";
                     ?>
@@ -789,10 +819,10 @@ EOD;
             </div>
             <div class="clear"></div>
             <div id="salesforce_field_group" valign="top" <?php echo empty($config["meta"]["contact_object_name"]) || empty($config["form_id"]) ? "style='display:none;'" : "" ?>>
-            	<div id="salesforce_field_container" valign="top" class="margin_vertical_10" >
-                	<h2><?php _e('3. Map form fields to Salesforce fields.', "gravity-forms-salesforce"); ?></h2>
-                	<h3 class="description"><?php _e('About field mapping:', "gravity-forms-salesforce"); ?></h2>
-                	<label for="salesforce_fields" class="left_header"><?php _e("Standard Fields", "gravity-forms-salesforce"); ?> <?php gform_tooltip("salesforce_map_fields") ?></label>
+                <div id="salesforce_field_container" valign="top" class="margin_vertical_10" >
+                    <h2><?php _e('3. Map form fields to Salesforce fields.', "gravity-forms-salesforce"); ?></h2>
+                    <h3 class="description"><?php _e('About field mapping:', "gravity-forms-salesforce"); ?></h2>
+                    <label for="salesforce_fields" class="left_header"><?php _e("Standard Fields", "gravity-forms-salesforce"); ?> <?php gform_tooltip("salesforce_map_fields") ?></label>
                     <div id="salesforce_field_list">
                     <?php
                     if(!empty($config["form_id"])){
@@ -812,7 +842,7 @@ EOD;
                     </div>
                     <div class="clear"></div>
                 </div>
-				
+
                 <div id="salesforce_optin_container" valign="top" class="margin_vertical_10">
                     <label for="salesforce_optin" class="left_header"><?php _e("Opt-In Condition", "gravity-forms-salesforce"); ?> <?php gform_tooltip("salesforce_optin_condition") ?></label>
                     <div id="salesforce_optin">
@@ -872,63 +902,63 @@ EOD;
             </div>
         </form>
         </div>
-		
+
 <script type="text/javascript">
-	jQuery(document).ready(function($) { 
-			$('#gf_salesforce_list').live('load change', function() {
-				$('#lists_loading').hide();
-			});
-			$("#gf_salesforce_list input").bind('click change', function() {
-				
-				if($("#gf_salesforce_list input:checked").length > 0) {
-					SelectList(1);
-				} else {
-					SelectList(false);
-					jQuery("#gf_salesforce_form").val("");
-				}
-			});
-			
-	<?php if(isset($_REQUEST['id'])) { ?>
-		$('#salesforce_field_list').live('load', function() {
-			$('.salesforce_field_cell select').each(function() {
-				var $select = $(this);
-				if($().prop) {
-					var label = $.trim($('label[for='+$(this).prop('name')+']').text());
-				} else {
-					var label = $.trim($('label[for='+$(this).attr('name')+']').text());
-				}
-				label = label.replace(' *', '');
-				
-				if($select.val() === '') {
-					$('option', $select).each(function() {
-						
-						if($(this).text() === label) {
-							if($().prop) {
-								$(this).prop('selected', true);
-							} else {
-								$(this).attr('selected', true);
-							}
-						}
-					});
-				}
-			});
-		});
-	<?php } ?>
-	});
-		</script>
-		<script type="text/javascript">
-			
-			/*
-jQuery(document).ready(function() { 
-				
-				SelectList(jQuery('#gf_salesforce_list').val());
-				
-				SelectForm(jQuery('#gf_salesforce_list').val(), jQuery('#gf_salesforce_form').val());
-				
-			});
-			
+    jQuery(document).ready(function($) {
+            $('#gf_salesforce_list').live('load change', function() {
+                $('#lists_loading').hide();
+            });
+            $("#gf_salesforce_list input").bind('click change', function() {
+
+                if($("#gf_salesforce_list input:checked").length > 0) {
+                    SelectList(1);
+                } else {
+                    SelectList(false);
+                    jQuery("#gf_salesforce_form").val("");
+                }
+            });
+
+    <?php if(isset($_REQUEST['id'])) { ?>
+        $('#salesforce_field_list').live('load', function() {
+            $('.salesforce_field_cell select').each(function() {
+                var $select = $(this);
+                if($().prop) {
+                    var label = $.trim($('label[for='+$(this).prop('name')+']').text());
+                } else {
+                    var label = $.trim($('label[for='+$(this).attr('name')+']').text());
+                }
+                label = label.replace(' *', '');
+
+                if($select.val() === '') {
+                    $('option', $select).each(function() {
+
+                        if($(this).text() === label) {
+                            if($().prop) {
+                                $(this).prop('selected', true);
+                            } else {
+                                $(this).attr('selected', true);
+                            }
+                        }
+                    });
+                }
+            });
+        });
+    <?php } ?>
+    });
+        </script>
+        <script type="text/javascript">
+
+            /*
+jQuery(document).ready(function() {
+
+                SelectList(jQuery('#gf_salesforce_list').val());
+
+                SelectForm(jQuery('#gf_salesforce_list').val(), jQuery('#gf_salesforce_form').val());
+
+            });
+
 */
-			function SelectList(listId){
+            function SelectList(listId){
                 if(listId){
                     jQuery("#salesforce_form_container").slideDown();
                    // jQuery("#gf_salesforce_form").val("");
@@ -940,7 +970,7 @@ jQuery(document).ready(function() {
             }
 
             function SelectForm(listId, formId){
-	            		
+
                 if(!formId){
                     jQuery("#salesforce_field_group").slideUp();
                     return;
@@ -989,7 +1019,7 @@ jQuery(document).ready(function() {
 
                     jQuery("#salesforce_field_list").html(fieldList);
                     jQuery("#salesforce_field_group").slideDown();
-					jQuery('#salesforce_field_list').trigger('load');
+                    jQuery('#salesforce_field_list').trigger('load');
                 }
                 else{
                     jQuery("#salesforce_field_group").slideUp();
@@ -1056,7 +1086,7 @@ jQuery(document).ready(function() {
             }
 
         </script>
-		
+
         <?php
 
     }
@@ -1077,14 +1107,14 @@ jQuery(document).ready(function() {
     }
 
     public static function select_salesforce_form(){
-		check_ajax_referer("gf_select_salesforce_form", "gf_select_salesforce_form");
-        
+        check_ajax_referer("gf_select_salesforce_form", "gf_select_salesforce_form");
+
         $api = self::get_api();
-        
+
         if(($api === false) || is_string($api) || !isset($_POST["objectType"])) {
             die("EndSelectForm();");
         }
-        
+
         $form_id =  intval($_POST["form_id"]);
 
         $setting_id =  0;
@@ -1097,90 +1127,90 @@ jQuery(document).ready(function() {
 
         //getting field map UI
         $str = self::get_field_mapping($config, $form_id, $merge_vars);
-        
+
         //fields meta
         $form = RGFormsModel::get_form_meta($form_id);
         //$fields = $form["fields"];
-        
+
         die("EndSelectForm('" .str_replace("'", "\'", $str). "', " . GFCommon::json_encode($form) . ");");
     }
 
     private static function show_field_type_desc($field = '') {
-    	$types = array(
-    		'anyType',
-			'calculated',
-			'combobox',
-			'currency',
-			'DataCategoryGroupReference',
-			'email',
-			'encryptedstring',
-			'ID',
-			'masterrecord',
-			'multipicklist',
-			'percent',
-			'phone',
-			'picklist',
-			'reference',
-			'textarea',
-			'url',
-		);
-		return in_array($field, $types);
+        $types = array(
+            'anyType',
+            'calculated',
+            'combobox',
+            'currency',
+            'DataCategoryGroupReference',
+            'email',
+            'encryptedstring',
+            'ID',
+            'masterrecord',
+            'multipicklist',
+            'percent',
+            'phone',
+            'picklist',
+            'reference',
+            'textarea',
+            'url',
+        );
+        return in_array($field, $types);
     }
 
     private static function get_field_mapping($config = array(), $form_id, $merge_vars){
 
-		$usedFields = array();
-		$str = $custom = $standard = '';
-		
+        $usedFields = array();
+        $str = $custom = $standard = '';
+
         //getting list of all fields for the selected form
         $form_fields = self::get_form_fields($form_id);
-        
+
         $str = "<table cellpadding='0' cellspacing='0'><thead><tr><th scope='col' class='salesforce_col_heading'>" . __("List Fields", "gravity-forms-salesforce") . "</th><th scope='col' class='salesforce_col_heading'>" . __("Form Fields", "gravity-forms-salesforce") . "</th></tr></thead><tbody>";
-        
+
         foreach($merge_vars as $var){
-        	
-        	if($var['type'] === 'reference' && apply_filters('gf_salesforce_skip_reference_types', true)) { continue; }
-        	
+
+            if($var['type'] === 'reference' && apply_filters('gf_salesforce_skip_reference_types', true)) { continue; }
+
             $selected_field = isset($config["meta"]["field_map"][$var["tag"]]) ? $config["meta"]["field_map"][$var["tag"]] : false;
             $required = $var["req"] === true ? "<span class='gfield_required' title='This field is required.'>*</span>" : "";
             $error_class = $var["req"] === true && empty($selected_field) && !empty($_POST["gf_salesforce_submit"]) ? " feeds_validation_error" : "";
             $field_desc = '';
             if(self::show_field_type_desc($var['type'])) {
-	            $field_desc = '<div>Type: '.$var["type"].'</div>';
-	        }
-	        if(!empty($var["length"])) { $field_desc .= '<div>Max Length: '.$var["length"].'</div>'; }
+                $field_desc = '<div>Type: '.$var["type"].'</div>';
+            }
+            if(!empty($var["length"])) { $field_desc .= '<div>Max Length: '.$var["length"].'</div>'; }
             $row = "<tr class='$error_class'><td class='salesforce_field_cell'><label for='salesforce_map_field_{$var['tag']}'>" . stripslashes( $var["name"] )  . " $required</label><small class='description' style='display:block'>{$field_desc}</small></td><td class='salesforce_field_cell'>" . self::get_mapped_field_list($var["tag"], $selected_field, $form_fields) . "</td></tr>";
-            
+
             $str .= $row;
 
         } // End foreach merge var.
-        
+
         $str .= "</tbody></table>";
-        
+
         return $str;
     }
-    
+
     private function getNewTag($tag, $used = array()) {
-		if(isset($used[$tag])) {
-			$i = 1;
-			while($i < 1000) {
-				if(!isset($used[$tag.'_'.$i])) {
-					return $tag.'_'.$i;
-				}
-				$i++;
-			}
-		}
-		return $tag;
+        if(isset($used[$tag])) {
+            $i = 1;
+            while($i < 1000) {
+                if(!isset($used[$tag.'_'.$i])) {
+                    return $tag.'_'.$i;
+                }
+                $i++;
+            }
+        }
+        return $tag;
     }
-  	
+
     public static function get_form_fields($form_id){
         $form = RGFormsModel::get_form_meta($form_id);
         $fields = array();
 
         //Adding default fields
-        array_push($form["fields"],array("id" => "date_created" , "label" => __("Entry Date", "gravityformsmailchimp")));
-        array_push($form["fields"],array("id" => "ip" , "label" => __("User IP", "gravityformsmailchimp")));
-        array_push($form["fields"],array("id" => "source_url" , "label" => __("Source Url", "gravityformsmailchimp")));
+        array_push($form["fields"],array("id" => "date_created" , "label" => __("Entry Date", "gravity-forms-salesforce")));
+        array_push($form["fields"],array("id" => "ip" , "label" => __("User IP", "gravity-forms-salesforce")));
+        array_push($form["fields"],array("id" => "source_url" , "label" => __("Source Url", "gravity-forms-salesforce")));
 
         if(is_array($form["fields"])){
             foreach($form["fields"] as $field){
@@ -1188,7 +1218,7 @@ jQuery(document).ready(function() {
 
                     //If this is an address field, add full name to the list
                     if(RGFormsModel::get_input_type($field) == "address")
-                        $fields[] =  array($field["id"], GFCommon::get_label($field) . " (" . __("Full" , "gravityformsmailchimp") . ")");
+                        $fields[] =  array($field["id"], GFCommon::get_label($field) . " (" . __("Full" , "gravity-forms-salesforce") . ")");
 
                     foreach($field["inputs"] as $input)
                         $fields[] =  array($input["id"], GFCommon::get_label($field, $input["id"]));
@@ -1220,7 +1250,7 @@ jQuery(document).ready(function() {
     }
 
     public static function get_mapped_field_list($variable_name, $selected_field, $fields){
-    	$field_name = "salesforce_map_field_" . $variable_name;
+        $field_name = "salesforce_map_field_" . $variable_name;
         $str = "<select name='$field_name' id='$field_name'><option value=''>" . __("", "gravity-forms-salesforce") . "</option>";
         foreach($fields as $field){
             $field_id = $field[0];
@@ -1230,16 +1260,16 @@ jQuery(document).ready(function() {
         $str .= "</select>";
         return $str;
     }
-    
+
     public static function get_mapped_field_checkbox($variable_name, $selected_field, $field){
         $field_name = "salesforce_map_field_" . $variable_name;
         $field_id = $field[0];
         $str =  "<input name='$field_name' id='$field_name' type='checkbox' value='$field_id'";
         $selected = $field_id == $selected_field ? " checked='checked'" : false;
         if($selected) {
-        	$str .= $selected; 
+            $str .= $selected;
         }
-    
+
         $str .= " />";
         return $str;
     }
@@ -1249,7 +1279,7 @@ jQuery(document).ready(function() {
         $api = self::get_api();
 
         if(($api === false) || is_string($api) || !preg_match('/200\sOK/ism', $api->getLastResponseHeaders())) {
-        	do_action('gf_salesforce_error', 'export', $api);
+            do_action('gf_salesforce_error', 'export', $api);
             return;
         }
 
@@ -1258,11 +1288,11 @@ jQuery(document).ready(function() {
 
         //getting all active feeds
         $feeds = GFSalesforceData::get_feed_by_form($form["id"], true);
-        
+
         foreach($feeds as $feed){
             //only export if user has opted in
             if(self::is_optin($form, $feed)) {
-				self::export_feed($entry, $form, $feed, $api);
+                self::export_feed($entry, $form, $feed, $api);
             }
         }
     }
@@ -1270,81 +1300,122 @@ jQuery(document).ready(function() {
     public static function export_feed($entry, $form, $feed, $api){
         $email = $entry[(int)$feed["meta"]["field_map"]["email"]];
 
-        if(empty($feed["meta"]["contact_object_name"])) { 
-        	return false; 
+        if(empty($feed["meta"]["contact_object_name"])) {
+            return false;
         }
-		
-		$contactId = self::create($entry, $form, $feed, $api);
 
-		return $contactId;
+        $contactId = self::create($entry, $form, $feed, $api);
+
+        return $contactId;
     }
-    
+
     private function create($entry, $form, $feed, $api) {
-	    	    
-	    $merge_vars = array();
+
+
+
+        $merge_vars = array();
         foreach($feed["meta"]["field_map"] as $var_tag => $field_id){
 
             $field = RGFormsModel::get_field($form, $field_id);
-            
+            $input_type = RGFormsModel::get_input_type($field);
+
             if($var_tag == 'address_full') {
                 $merge_vars[$var_tag] = self::get_address($entry, $field_id);
             } else if($var_tag  == 'country') {
-            	$merge_vars[$var_tag] = empty($entry[$field_id]) ? '' : GFCommon::get_country_code(trim($entry[$field_id]));
+                $merge_vars[$var_tag] = empty($entry[$field_id]) ? '' : GFCommon::get_country_code(trim($entry[$field_id]));
             } else if($var_tag != "email") {
-            	if(!empty($entry[$field_id])) {
-            		/*
-if($field['type'] == 'textarea') {
-            			$merge_vars[$var_tag] = '<![CDATA['.$entry[$field_id].']]>';
-            		} else{
-*/
-            			$merge_vars[$var_tag] = htmlspecialchars($entry[$field_id]);
-            		#}
-            	} else {
-            		foreach($entry as $key => $value) {
-            			if(floor($key) == floor($field_id) && !empty($value)) {
-            				$merge_vars[$var_tag][] = htmlspecialchars($value);
-            			}
-            		}
-            	}
+                if(!empty($entry[$field_id])) {
+                    switch($input_type) {
+                        case 'multiselect':
+                            // If there are commas in the value, this makes it so it can be comma exploded.
+                            // Values cannot contain semicolons: http://boards.developerforce.com/t5/NET-Development/Salesforce-API-inserting-values-into-multiselect-fields-using/td-p/125910
+                            foreach($field['choices'] as $choice) {
+                                $entry[$field_id] = str_replace($choice, str_replace(',', '&#44;', $choice), $entry[$field_id]);
+                            }
+                            // Break into an array
+                            $elements = explode(",",$entry[$field_id]);
+
+                            // We decode first so that the commas are commas again, then
+                            // implode the array to be picklist format for SF
+                            $merge_vars[$var_tag] = implode(';', array_map('html_entity_decode', array_map('htmlspecialchars', $elements)));
+                            break;
+                        default:
+                            $merge_vars[$var_tag] = htmlspecialchars($entry[$field_id]);
+                    }
+                } else {
+
+                    // This is for checkboxes
+                    $elements = array();
+                    foreach($entry as $key => $value) {
+                        if(floor($key) == floor($field_id) && !empty($value)) {
+                            $elements[] = htmlspecialchars($value);
+                        }
+                    }
+                    $merge_vars[$var_tag] = implode(';',array_map('htmlspecialchars', $elements));
+                }
             }
         }
-        
+
         $account = new SObject();
 
-		$account->fields = $merge_vars;
+        $account->fields = $merge_vars;
 
-		// Object type
-		$account->type = $feed['meta']['contact_object_name'];
-		
-		$result = $api->create(array($account));
-		
-		$debug = '';
-		if(self::is_debug()) {
-			$debug = '<pre>'.print_r(array(
-					'Form Entry Data' => $entry, 
-					'Form Meta Data' => $form, 
-					'Salesforce Feed Meta Data' => $feed, 
-					'Salesforce Posted Merge Data' =>$merge_vars,
-					'Posted Data ($_POST)' => $_POST, 
-					'result' => $result[0],
-					'$api' => $api
-				), true).'</pre>';
-		}
-		
-		if  (isset($result[0]) && !empty($result[0]->success)) {
-			if(self::is_debug()) { echo '<h2>Success</h2>'.$debug; }
-			return $result[0]->id;
-		} else {
-			
-			$errors = $result[0]->errors[0];
-			
-			if(self::is_debug()) {
-				echo '<h2>Error</h2>'.$debug;
-				echo '<h2>Errors</h2><pre>'.print_r($errors, true).'</pre>';
-			}
-				
-			return false;
-		}
+        // Object type
+        $account->type = $feed['meta']['contact_object_name'];
+
+        $result = $api->create(array($account));
+
+        $debug = '';
+        if(self::is_debug()) {
+            $debug = '<pre>'.print_r(array(
+                    'Form Entry Data' => $entry,
+                    'Form Meta Data' => $form,
+                    'Salesforce Feed Meta Data' => $feed,
+                    'Salesforce Posted Merge Data' => $merge_vars,
+                    'Posted Data ($_POST)' => $_POST,
+                    'result' => $result[0],
+                    '$api' => $api
+                ), true).'</pre>';
+        }
+
+        if  (isset($result[0]) && !empty($result[0]->success)) {
+            if(self::is_debug()) { echo '<h2>Success</h2>'.$debug; }
+            gform_update_meta($entry['id'], 'salesforce_id', $result[0]->id);
+            self::add_note($entry["id"], sprintf(__('Successfully added to Salesforce with ID #%s . View entry at %s', 'gravity-forms-salesforce'), $result[0]->id, 'https://na9.salesforce.com/'.$result[0]->id));
+            return $result[0]->id;
+        } else {
+
+            $errors = $result[0]->errors[0];
+
+            if(self::is_debug()) {
+                echo '<h2>Error</h2>'.$debug;
+                echo '<h2>Errors</h2><pre>'.print_r($errors, true).'</pre>';
+            }
+
+            if($email = self::is_notify_on_error()) {
+                $message = sprintf(apply_filters('gravityforms_salesforce_notify_on_error_message', __("<h3>Error Adding To Salesforce</h3><p>There was an error when attempting to add <a href='%s'>Entry #%s</a> from the form \"%s\"</p>", 'gravity-forms-salesforce'), $errors, $entry, $form), admin_url('admin.php?page=gf_entries&view=entry&id='.$entry['form_id'].'&lid='.$entry['id']), $entry['id'], $form['title']);
+                $headers = "Content-type: text/html; charset=" . get_option('blog_charset') . "\r\n";
+                wp_mail($email,__('Error adding to Salesforce', 'gravity-forms-salesforce'), $message, $headers);
+            }
+
+            self::add_note($entry["id"], sprintf(__('Errors when adding to Salesforce: %s', 'gravity-forms-salesforce'), $errors->message));
+
+            return false;
+        }
+    }
+
+    function entry_info_link_to_salesforce($form_id, $lead) {
+        $salesforce_id = gform_get_meta($lead['id'], 'salesforce_id');
+        if(!empty($salesforce_id)) {
+            echo sprintf(__('Salesforce ID: <a href="https://na9.salesforce.com/'.$salesforce_id.'">%s</a><br /><br />', 'gravity-forms-salesforce'), $salesforce_id);
+        }
+    }
+
+    private function add_note($id, $note) {
+
+        if(!apply_filters('gravityforms_salesforce_add_notes_to_entries', true)) { return; }
+
+        RGFormsModel::add_note($id, 0, __('Gravity Forms Salesforce Add-on'), $note);
     }
 
     public static function uninstall(){
@@ -1393,8 +1464,8 @@ if($field['type'] == 'textarea') {
             return false;
         }
     }
-    
-  	private function simpleXMLToArray($xml,
+
+    private function simpleXMLToArray($xml,
                     $flattenValues=true,
                     $flattenAttributes = true,
                     $flattenChildren=true,
@@ -1443,27 +1514,27 @@ if($field['type'] == 'textarea') {
             if(!$flattenAttributes){$return[$attributesKey] = $attributes;}
             else{$return = array_merge($return, $attributes);}
         }
-        
+
         return $return;
     }
-    
+
     private function convert_xml_to_object($response) {
-  		$response = @simplexml_load_string($response);  // Added @ 1.2.2
-		if(is_object($response)) {
-		    return $response;
-		} else {
-		    return false;
-		}
+        $response = @simplexml_load_string($response);  // Added @ 1.2.2
+        if(is_object($response)) {
+            return $response;
+        } else {
+            return false;
+        }
     }
-    
+
     private function convert_xml_to_array($response) {
-  		$response = self::convert_xml_to_object($response);
-  		$response = self::simpleXMLToArray($response);
-		if(is_array($response)) {
-		    return $response;
-		} else {
-		    return false;
-		}
+        $response = self::convert_xml_to_object($response);
+        $response = self::simpleXMLToArray($response);
+        if(is_array($response)) {
+            return $response;
+        } else {
+            return false;
+        }
     }
 
     protected static function has_access($required_permission){
@@ -1489,4 +1560,3 @@ if($field['type'] == 'textarea') {
 
 }
 
-?>

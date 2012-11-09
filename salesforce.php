@@ -2,7 +2,7 @@
 /*
 Plugin Name: Gravity Forms Salesforce Web to Lead Add-On
 Description: Integrate <a href="http://formplugin.com?r=salesforce">Gravity Forms</a> with Salesforce - form submissions are automatically sent to your Salesforce account!
-Version: 2.0.2
+Version: 2.1
 Author: Katz Web Services, Inc.
 Author URI: http://www.katzwebservices.com
 
@@ -39,22 +39,22 @@ class GFSalesforceWebToLead {
     //Plugin starting point. Will load appropriate files
     public static function init(){
 	    global $pagenow;
-	    
+
 	    if($pagenow === 'plugins.php') {
 			add_action("admin_notices", array('GFSalesforceWebToLead', 'is_gravity_forms_installed'), 10);
 		}
-		
+
 		if(self::is_gravity_forms_installed(false, false) === 0){
 			add_action('after_plugin_row_' . self::$path, array('GFSalesforceWebToLead', 'plugin_row') );
            return;
         }
-		
+
 		if(!self::is_gravityforms_supported()){
            return;
         }
 
         if(is_admin()){
-		
+
             //creates a new Settings page on Gravity Forms' settings screen
             if(self::has_access("gravityforms_salesforce")){
                 RGForms::add_settings_page("Salesforce Web to Lead", array("GFSalesforceWebToLead", "settings_page"), self::get_base_url() . "/images/salesforce-50x50.png");
@@ -76,21 +76,21 @@ class GFSalesforceWebToLead {
 		} elseif(in_array(RG_CURRENT_PAGE, array('admin.php'))) {
         	add_action('admin_head', array('GFSalesforceWebToLead', 'show_salesforce_status'));
         } else {
-            add_action("gform_pre_submission", array('GFSalesforceWebToLead', 'push'), 10, 2); //handling post submission.    
+            add_action("gform_pre_submission", array('GFSalesforceWebToLead', 'push'), 10, 2); //handling post submission.
         }
-        
+
         #add_action("gform_field_advanced_settings", array('GFSalesforceWebToLead',"add_salesforce_editor_field"), 10, 2); // For future use
-        
+
         add_action("gform_editor_js", array('GFSalesforceWebToLead', 'add_form_option_js'), 10);
 
 		add_filter('gform_tooltips', array('GFSalesforceWebToLead', 'add_form_option_tooltip'));
-		
+
 		add_filter("gform_confirmation", array('GFSalesforceWebToLead', 'confirmation_error'));
     }
-    
+
      public static function is_gravity_forms_installed($asd = '', $echo = true) {
 		global $pagenow, $page, $showed_is_gravity_forms_installed; $message = '';
-		
+
 		$installed = 0;
 		$name = self::$name;
 		if(!class_exists('RGForms')) {
@@ -104,7 +104,7 @@ class GFSalesforceWebToLead {
 		<p>You do not have the Gravity Forms plugin installed. <a href="http://katz.si/gravityforms">Get Gravity Forms</a> today.</p>
 EOD;
 			}
-			
+
 			if(empty($showed_is_gravity_forms_installed)) {
 				echo '<div id="message" class="updated">'.$message.'</div>';
 				$showed_is_gravity_forms_installed = true;
@@ -114,14 +114,14 @@ EOD;
 		}
 		return $installed;
 	}
-	
+
 	public static function plugin_row(){
         if(!self::is_gravityforms_supported()){
             $message = sprintf(__("%sGravity Forms%s is required. %sPurchase it today!%s"), "<a href='http://katz.si/gravityforms'>", "</a>", "<a href='http://katz.si/gravityforms'>", "</a>");
             self::display_plugin_message($message, true);
         }
     }
-    
+
     public static function display_plugin_message($message, $is_error = false){
     	$style = '';
         if($is_error)
@@ -129,27 +129,27 @@ EOD;
 
         echo '</tr><tr class="plugin-update-tr"><td colspan="5" class="plugin-update"><div class="update-message" ' . $style . '>' . $message . '</div></td>';
     }
-    
+
 	public function add_salesforce_editor_field($position, $form_id) {
     	/* For future use */
     }
-	
+
 	public static function confirmation_error($confirmation, $form = '', $lead = '', $ajax ='' ) {
-		
+
 		if(current_user_can('administrator') && !empty($_REQUEST['salesforceErrorMessage'])) {
 			$confirmation .= sprintf(__('%sThe entry was not added to Salesforce because %sboth first and last names are required%s, and were not detected. %sYou are only being shown this because you are an administrator. Other users will not see this message.%s%s', 'gravity-forms-salesforce'), '<div class="error" style="text-align:center; color:#790000; font-size:14px; line-height:1.5em; margin-bottom:16px;background-color:#FFDFDF; margin-bottom:6px!important; padding:6px 6px 4px 6px!important; border:1px dotted #C89797">', '<strong>', '</strong>', '<em>', '</em>', '</div>');
-		}			
+		}
 		return $confirmation;
 	}
-	
+
 	public static function add_form_option_tooltip($tooltips) {
 		$tooltips["form_salesforce"] = "<h6>" . __("Enable Salesforce Integration", "gravity-forms-salesforce") . "</h6>" . __("Check this box to integrate this form with Salesforce. When an user submits the form, the data will be added to Salesforce.", "gravity-forms-salesforce");
 		return $tooltips;
 	}
-	
+
 	public static function show_salesforce_status() {
-		global $pagenow; 
-		
+		global $pagenow;
+
 		if(isset($_REQUEST['page']) && $_REQUEST['page'] == 'gf_edit_forms' && !isset($_REQUEST['id'])) {
 			$activeforms = array();
         	$forms = RGFormsModel::get_forms();
@@ -160,9 +160,9 @@ EOD;
         			$activeforms[] = $form['id'];
         		}
         	}
-        	
+
         	if(!empty($activeforms)) {
-		
+
 ?>
 <style type="text/css">
 	td a.row-title span.salesforce_enabled {
@@ -179,7 +179,7 @@ EOD;
 			if($('td.column-id', $(this)).text() == <?php echo implode('||', $activeforms); ?>) {
 				$('td a.row-title', $(this)).append('<span class="salesforce_enabled" title="<?php _e('Salesforce integration is enabled for this Form', "gravity-forms-salesforce"); ?>"></span>');
 			}
-		});		
+		});
 	});
 </script>
 <?php
@@ -187,7 +187,7 @@ EOD;
 		}
 	}
 
-	public static function add_form_option_js() { 
+	public static function add_form_option_js() {
 		ob_start();
 			gform_tooltip("form_salesforce");
 			$tooltip = ob_get_contents();
@@ -215,29 +215,29 @@ EOD;
 <script type="text/javascript">
 	jQuery(document).ready(function($) {
 		$('#gform_settings_tab_2 .gforms_form_settings').append("<li><input type='checkbox' id='gform_enable_salesforce' /> <label for='gform_enable_salesforce' id='gform_enable_salesforce_label'><?php _e("Enable Salesforce integration", "gravity-forms-salesforce") ?> <?php echo $tooltip; ?></label></li>");
-		
+
 		if($().prop) {
 			$("#gform_enable_salesforce").prop("checked", form.enableSalesforce ? true : false);
 		} else {
 			$("#gform_enable_salesforce").attr("checked", form.enableSalesforce ? true : false);
 		}
-		
+
 		$("#gform_enable_salesforce").live('click change load', function(e) {
-			
+
 			var checked = $(this).is(":checked")
-			
+
 			form.enableSalesforce = checked;
-			
+
 			if(checked) {
 				$("#gform_title").append('<span class="salesforce" title="<?php _e("Salesforce integration is enabled.", "gravity-forms-salesforce") ?>"></span>');
 			} else {
 				$("#gform_title .salesforce").remove();
 			}
-			
+
 			SortFields(); // Update the form object to include the new enableSalesforce setting
-			
+
 		}).trigger('load');
-		
+
 		$('.tooltip_form_salesforce').qtip({
 	         content: $('.tooltip_form_salesforce').attr('tooltip'), // Use the tooltip attribute of the element for the content
 	         show: { delay: 200, solo: true },
@@ -252,8 +252,8 @@ EOD;
 	    });
 	});
 </script><?php
-	}		
-	
+	}
+
     //Returns true if the current page is an Feed pages. Returns false if not
     private static function is_salesforce_page(){
     	if(empty($_GET["page"])) { return false; }
@@ -294,7 +294,7 @@ EOD;
         else{
             $settings = get_option("gf_salesforce_oid");
         }
-        
+
         $api = self::test_api(true);
 
         if(is_array($api) && empty($api)){
@@ -320,22 +320,22 @@ EOD;
         </style>
 		<div class="wrap">
 		<img alt="<?php _e("Salesforce.com Feeds", "gravity-forms-salesforce") ?>" src="<?php echo self::get_base_url()?>/images/salesforce-50x50.png" style="float:left; margin:0 7px 0 0;" width="50" height="50" />
-		<?php 
+		<?php
 			if($plugin_page !== 'gf_settings') {
-			
+
 				echo '<h2>'.__('Salesforce.com Web to Lead Configuration',"gravityformssalesforce").'</h2>';
 			}
-			if($message) { 
+			if($message) {
 				echo "<div class='fade below-h2 {$class}'>".wpautop($message)."</div>";
 			} ?>
-			
+
         <form method="post" action="" style="margin: 30px 0 30px; clear:both;">
             <?php wp_nonce_field("update", "gf_salesforce_update") ?>
             <h3><?php _e("Salesforce Account Information", "gravityformssalesforce") ?></h3>
             <p style="text-align: left;">
                 <?php _e(sprintf("If you don't have a Salesforce account, you can %ssign up for one here%s", "<a href='http://www.salesforce.com' target='_blank'>" , "</a>"), "gravityformssalesforce") ?>
             </p>
-			
+
 			<table class="form-table">
                 <tr>
                     <th scope="row"><label for="gf_salesforce_org_id"><?php _e("Salesforce Org. ID", "gravityformssalesforce"); ?></label> </th>
@@ -348,12 +348,12 @@ EOD;
 
             </table>
         </form>
-		
+
 	<?php if(isset($valid) && $valid) { ?>
 		<div class="hr-divider"></div>
-		
+
 		<h3>Usage Instructions</h3>
-		
+
 		<div class="delete-alert alert_gray">
 			<h4>To integrate a form with Salesforce:</h4>
 			<ol class="ol-decimal">
@@ -364,18 +364,18 @@ EOD;
 				<li>Save the form</li>
 			</ol>
 		</div>
-		
+
 		<h4><?php _e('Custom Fields', "gravityformssalesforce"); ?></h4>
 		<?php echo wpautop(sprintf(__('When you are trying to map a custom field, you need to set either the "Admin Label" for the input (in the Advanced tab of each field in the  Gravity Forms form editor) or the Parameter Name (in Advanced tab, visible after checking "Allow field to be populated dynamically") to be the API Name of the Custom Field as shown in Salesforce. For example, a Custom Field with a Field Label "Web Source" could have an API Name of `SFGA__Web_Source__c`.
 
 You can find your Custom Fields under [Your Name] &rarr; Setup &rarr; Leads &rarr; Fields, then at the bottom of the page, there&rsquo;s a list of "Lead Custom Fields & Relationships". This is where you will find the "API Name" to use in the Admin Label or Parameter Name.
 
 For more information on custom fields, %sread this Salesforce.com Help Article%s', "gravityformssalesforce"), '<a href="https://help.salesforce.com/apex/htviewhelpdoc?id=customize_customfields.htm&language=en" target="_blank">', '</a>')); ?>
-		
+
         <h4><?php _e('Form Fields', "gravityformssalesforce"); ?></h4>
         <p><?php _e('Fields will be automatically mapped by Salesforce using the default Gravity Forms labels.', "gravityformssalesforce"); ?></p>
         <p><?php _e('If you have issues with data being mapped, make sure to use the following keywords in the label to match and send data to Salesforce.', "gravityformssalesforce"); ?></p>
-		
+
         <ul class="ul-square">
         	<li><?php _e(sprintf('%sname%s (use to auto-split names into First Name and Last Name fields)', '<code>', '</code>'), "gravityformssalesforce"); ?></li>
             <li><?php _e(sprintf('%sfirst name%s', '<code>', '</code>'), "gravityformssalesforce"); ?></li>
@@ -389,7 +389,7 @@ For more information on custom fields, %sread this Salesforce.com Help Article%s
             <li><?php _e(sprintf('%ssubject%s', '<code>', '</code>'), "gravityformssalesforce"); ?></li>
             <li><?php _e(sprintf('%sdescription%s, %squestion%s, %smessage%s, or %scomments%s for Description', '<code>', '</code>','<code>', '</code>','<code>', '</code>','<code>', '</code>'), "gravityformssalesforce"); ?></li>
         </ul>
-		
+
 		<form action="" method="post">
             <?php wp_nonce_field("uninstall", "gf_salesforce_uninstall") ?>
             <?php if(GFCommon::current_user_can_any("gravityforms_salesforce_uninstall")){ ?>
@@ -418,36 +418,36 @@ For more information on custom fields, %sread this Salesforce.com Help Article%s
 			self::settings_page();
 		}
     }
-	
+
     private static function test_api($debug = false){
     	$api = false;
 
         return self::send_request(array(), $debug);
-        
+
     }
-		
+
 	public static function send_request($post, $debug = false) {
 		global $wp_version;
         $post['oid'] 			= get_option("gf_salesforce_oid");
 		$post['debug']			= $debug;
-		
+
 		if(empty($post['oid'])) { return false; }
-		
+
 		// Set SSL verify to false because of server issues.
-		$args = array( 	
+		$args = array(
 			'body' 		=> $post,
 			'headers' 	=> array(
 				'user-agent' => 'Gravity Forms Salesforce Add-on plugin - WordPress/'.$wp_version.'; '.get_bloginfo('url'),
 			),
-			'sslverify'	=> false,  
+			'sslverify'	=> false,
 		);
-		
+
 		$sub = $debug ? 'test' : 'www';
-		
+
 #		echo '<pre>'; print_r($args); die();
-		
+
 		$result = wp_remote_post('https://'.$sub.'.salesforce.com/servlet/servlet.WebToLead?encoding=UTF-8', $args);
-		
+
 		if(wp_remote_retrieve_response_code($result) !== 200) { // Server is down.
 			return array();
 		} elseif(!isset($result['headers']['is-processed'])) { // For a valid debug test
@@ -457,15 +457,15 @@ For more information on custom fields, %sread this Salesforce.com Help Article%s
 		} elseif(strpos($result['headers']['is-processed'], 'Exception')) { // For an invalid request
 			return false;
 		}
-		
+
 		return $result;
 	}
-	
+
     public static function push($form_meta, $entry = array()){
     	global $wp_version;
 
     	if(!isset($form_meta['enableSalesforce']) || empty($form_meta['enableSalesforce'])) { return; }
-    	
+
     	$defaults = array(
 			'first_name' 	=> array('label' => 'First name'),
 			'last_name' 	=> array('label' => 'Last name'),
@@ -495,17 +495,17 @@ For more information on custom fields, %sread this Salesforce.com Help Article%s
 			'doNotCall'		=> array('label' => 'Do Not Call'),
 			'retURL'		=> array('label' => 'Return URL')
 		);
-		
+
 		$data = array();
-    	
-    	
+
+
     	//displaying all submitted fields
 		foreach($form_meta["fields"] as $fieldKey => $field){
-			
+
 			if($field['type'] == 'section') {
 				continue;
 			}
-			
+
 			if( is_array($field["inputs"]) ){
 				$valuearray = array();
 			   //handling multi-input fields such as name and address
@@ -547,9 +547,9 @@ For more information on custom fields, %sread this Salesforce.com Help Article%s
 			   }
 		   } else {
 			   //handling single-input fields such as text and paragraph (textarea)
-			   $value = trim(rtrim(stripslashes(@$_POST["input_" . $field["id"]])));		 
+			   $value = trim(rtrim(stripslashes(@$_POST["input_" . $field["id"]])));
 			   $label = self::getLabel($field["label"], $field);
-			   
+
 			   if ($label == 'BothNames' && !empty($value)) {
 				    $names = explode(" ", $value);
 				    $names[0] = trim(rtrim($names[0]));
@@ -578,41 +578,41 @@ For more information on custom fields, %sread this Salesforce.com Help Article%s
 			   }
 		   }
 	   }
-	   
+
 	   	$data['description'] = isset($data['description']) ? trim(rtrim($data['description'])) : '';
 	   	$data['street'] = isset($data['street']) ? trim(rtrim($data['street'])) : '';
 	  	$data['emailOptOut'] = !empty($data['emailOptOut']);
 	  	$data['faxOptOut'] = !empty($data['faxOptOut']);
 	  	$data['doNotCall'] = !empty($data['doNotCall']);
-	  	
+
 		$post = $data;
-    	
+
     	$lead_source = isset($form_meta['title']) ? $form_meta['title'] : 'Gravity Forms Form';
 		$data['lead_source'] = apply_filters('gf_salesforce_lead_source', $lead_source, $form_meta, $data);
 		$data['debug']			= 0;
-		
+
 		$result = self::send_request($data);
-		
+
 		if($result && !empty($result)) {
 			return true;
 		} else {
 			return false;
 		}
     }
-	
+
 	public static function getLabel($temp, $field = '', $input = false){
 		$label = false;
-				
+
 		if($input && isset($input['id'])) {
 			$id = $input['id'];
 		} else {
 			$id = $field['id'];
 		}
-		
+
 		$type = $field['type'];
-		
+
 		switch($type) {
-		
+
 			case 'name':
 				if($field['nameFormat'] == 'simple') {
 					$label = 'BothNames';
@@ -645,23 +645,23 @@ For more information on custom fields, %sread this Salesforce.com Help Article%s
 				$label = 'email';
 				break;
 		}
-		
-		if($label) { 
-			return $label; 
+
+		if($label) {
+			return $label;
 		}
-				
+
 		$the_label = strtolower($temp);
-		
+
 		if(!empty($field['inputName']) && (apply_filters('gf_salesforce_use_inputname', true) === true)) {
 			$label = $field['inputName'];
 		} elseif(!empty($field['adminLabel']) && (apply_filters('gf_salesforce_use_adminlabel', true) === true)) {
 			$label = $field['adminLabel'];
-		} 
-		
+		}
+
 		if(!apply_filters('gf_salesforce_autolabel', true) || !empty($label)) { return $label; }
-		
+
 		if ($type == 'name' && ($the_label === "first name" || $the_label === "first")) {
-			$label = 'first_name'; 
+			$label = 'first_name';
 		} else if ($type == 'name' && ($the_label === "last name" || $the_label === "last")) {
 			$label = 'last_name';
 		} elseif($the_label == 'prefix' || $the_label == 'salutation' || $the_label === 'prefix' || $the_label === 'salutation') {
@@ -710,7 +710,7 @@ For more information on custom fields, %sread this Salesforce.com Help Article%s
 			$label = 'employees';
 		} else if ( strpos( $the_label,"campaign") !== false ) {
 			$label = 'Campaign_ID';
-		} else if ( strpos( $the_label,"salesforce") !== false ) {	
+		} else if ( strpos( $the_label,"salesforce") !== false ) {
 			$label = 'salesforce';
 		} else if ( strpos( $the_label,"title") !== false ) {
 			$label = 'title';

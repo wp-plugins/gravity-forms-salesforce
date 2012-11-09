@@ -1,7 +1,7 @@
 === Gravity Forms Salesforce Add-on ===
 Tags: gravity forms, forms, gravity, form, crm, gravity form, salesforce, salesforce plugin, form, forms, gravity, gravity form, gravity forms, secure form, simplemodal contact form, wp contact form, widget, sales force, customer, contact, contacts, address, addresses, address book
 Requires at least: 2.8
-Tested up to: 3.5 beta2
+Tested up to: 3.5
 Stable tag: trunk
 Contributors: katzwebdesign,katzwebservices
 Donate link:https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=zackkatz%40gmail%2ecom&item_name=Gravity%20Forms%20Salesforce%20Addon&no_shipping=0&no_note=1&tax=0&currency_code=USD&lc=US&bn=PP%2dDonationsBF&charset=UTF%2d8
@@ -20,6 +20,19 @@ This free Salesforce Add-On for Gravity Forms adds contacts into Salesforce auto
 #### Now with Custom Field support! ####
 <a href="http://wordpress.org/extend/plugins/gravity-forms-salesforce/faq/">Read the FAQ</a> for information on how to integrate with Custom Fields.
 
+#### Using the API
+If you have the following Salesforce Editions, you can use the included API Add-on:
+
+* Enterprise Edition
+* Unlimited Edition
+* Developer Edition
+
+If you use the following Editions, you will use the included Web to Lead Add-on:
+
+- Personal Edition
+- Group Edition
+- Professional Edition<br />*Note: You can also purchase API access for a Professional Edition.*
+
 #### Other Gravity Forms Add-ons:
 
 * <a href="http://wordpress.org/extend/plugins/gravity-forms-highrise/">Gravity Forms Highrise Add-on</a> - Integrate Gravity Forms with Highrise, a CRM
@@ -35,7 +48,7 @@ If you have questions, comments, or issues with this plugin, <strong>please leav
 1. Integrate with more than one form.
 3. Salesforce.com settings page
 
-== Installation == 
+== Installation ==
 
 1. Upload plugin files to your plugins folder, or install using WordPress' built-in Add New Plugin installer
 1. Activate the plugin
@@ -45,7 +58,19 @@ If you have questions, comments, or issues with this plugin, <strong>please leav
 1. If the settings are correct, it will say so.
 1. Follow on-screen instructions for integrating with Salesforce.
 
-== Frequently Asked Questions == 
+== Frequently Asked Questions ==
+
+= Do I need both plugins activated? =
+No, you only need one, and the __API plugin is recommended__: the Web to Lead plugin is no longer being actively developed.
+
+= What are the server requirements? =
+Your server must support the following:
+
+* PHP 5.x
+* SOAP Enabled
+* SSL Enabled
+* cURL Enabled
+* OpenSSL Enabled
 
 = How do I configure the API plugin? =
 
@@ -62,7 +87,7 @@ This feature support was added in version 1.1.1. `gf_salesforce_lead_source` is 
 Add the following to your theme's `functions.php` file. Modify as you see fit:
 
 `
-add_filter('gf_salesforce_lead_source', 'make_my_own_lead_source', 1, 3); 
+add_filter('gf_salesforce_lead_source', 'make_my_own_lead_source', 1, 3);
 
 function make_my_own_lead_source($lead_source, $form_meta, $data) {
 	// $lead_source - What was about to be used (normally Gravity Forms Form Title)
@@ -84,6 +109,12 @@ This plugin is released under a GPL license.
 
 == Changelog ==
 
+= 2.1 =
+* Fixed: Added support for multiselect fields other fields with multiple responses
+* Added: Entries now get assigned a Salesforce ID that link directly to the Salesforce contact or object (API plugin only)
+* Added: Notes are now added to Entries with the success or error messages from exporting to Salesforce (API plugin only)
+* Added: You can have Salesforce export errors emailed to you when they occur (API plugin only)
+
 = 2.0.2 =
 * Fixed issue with HTML encoding to <a href="http://wordpress.org/support/topic/submitting?replies=2">fix SOAP fatal error</a>. Thanks, gmcinnes!
 
@@ -97,13 +128,13 @@ This plugin is released under a GPL license.
 = 1.1.3 =
 * Fixed issue with latest Gravity Forms preventing Salesforce checkbox from showing up - thanks <a href="http://msmprojects.com/">Michael Manley</a>!
 
-= 1.1.2 = 
+= 1.1.2 =
 * Fixed issue where entered Salesforce field mapping labels were being overwritten by auto-labeling.
 	- Added filter `gf_salesforce_autolabel` to turn off auto-labeling by adding `add_filter('gf_salesforce_autolabel', '__return_false');` to your theme's functions.php file.
 	- Made auto-labeling much less aggressive: now only matches exact matches for First Name, Company, etc.
 * Added support for checkboxes and other multiple-item fields using `implode()` PHP functionality: lists will be converted to comma-separated values.
 
-= 1.1.1 = 
+= 1.1.1 =
 * Fixes issue where all forms get submitted to Salesforce, not only enabled forms (<a href="http://www.seodenver.com/forums/topic/all-forms-posting-to-saleforce/">reported on support forum</a>).
 * Added a new filter to modify the lead source `gf_salesforce_lead_source`, <a href="http://wordpress.org/support/topic/657400" rel="nofollow">as requested here</a>. Passes three arguments: `$lead_source`, `$gf_form_meta`, `$salesforce_data`.
 
@@ -117,6 +148,11 @@ This plugin is released under a GPL license.
 
 == Upgrade Notice ==
 
+= 2.1 =
+* Added: Entries now get assigned a Salesforce ID that link directly to the Salesforce contact or object (API plugin only)
+* Added: Notes are now added to Entries with the success or error messages from exporting to Salesforce (API plugin only)
+* Added: You can have Salesforce export errors emailed to you when they occur (API plugin only)
+
 = 2.0.2 =
 * Fixed issue with HTML encoding to <a href="http://wordpress.org/support/topic/submitting?replies=2">fix SOAP fatal error</a>. Thanks, gmcinnes!
 
@@ -126,13 +162,13 @@ This plugin is released under a GPL license.
 = 1.1.3 =
 * Fixed issue with latest Gravity Forms preventing Salesforce checkbox from showing up - thanks <a href="http://msmprojects.com/">Michael Manley</a>!
 
-= 1.1.2 = 
+= 1.1.2 =
 * Fixed issue where entered Salesforce field mapping labels were being overwritten by auto-labeling.
 	- Added filter `gf_salesforce_autolabel` to turn off auto-labeling by adding `add_filter('gf_salesforce_autolabel', '__return_false');` to your theme's functions.php file.
 	- Made auto-labeling much less aggressive: now only matches exact matches for First Name, Company, etc.
 * Added support for checkboxes and other multiple-item fields using `implode()` PHP functionality: lists will be converted to comma-separated values.
 
-= 1.1.1 = 
+= 1.1.1 =
 * Fixes issue where all forms get submitted to Salesforce, not only enabled forms (<a href="http://www.seodenver.com/forums/topic/all-forms-posting-to-saleforce/">reported on support forum</a>).
 * Added a new filter to modify the lead source `gf_salesforce_lead_source`, <a href="http://wordpress.org/support/topic/657400" rel="nofollow">as requested here</a>. Passes three arguments: `$lead_source`, `$gf_form_meta`, `$salesforce_data`.
 
