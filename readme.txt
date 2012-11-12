@@ -109,6 +109,9 @@ This plugin is released under a GPL license.
 
 == Changelog ==
 
+= 2.1.1 =
+* Fixed issue <a href="http://wordpress.org/support/topic/plugin-gravity-forms-salesforce-add-on-no-settings-for-api-version?replies=2">reported here</a> with fatal error
+
 = 2.1 =
 * Fixed: Added support for multiselect fields other fields with multiple responses
 * Added: Entries now get assigned a Salesforce ID that link directly to the Salesforce contact or object (API plugin only)
@@ -147,6 +150,9 @@ This plugin is released under a GPL license.
 * Launch!
 
 == Upgrade Notice ==
+
+= 2.1.1 =
+* Fixed issue <a href="http://wordpress.org/support/topic/plugin-gravity-forms-salesforce-add-on-no-settings-for-api-version?replies=2">reported here</a> with fatal error
 
 = 2.1 =
 * Added: Entries now get assigned a Salesforce ID that link directly to the Salesforce contact or object (API plugin only)
