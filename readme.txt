@@ -109,8 +109,23 @@ This plugin is released under a GPL license.
 
 == Changelog ==
 
+= 2.2.2 =
+* Added Edit Form and Preview Form links to Salesforce.com Feeds list
+* Fixed issues with array processing with new `_remove_empty_fields` and `_convert_to_utf_8` methods
+
+= 2.2.1 =
+* API: Made live updating optional with radio button
+* API: Added cache time dropdown
+* API: Refreshes transients when changing cache time
+* Web to Lead: Fixed issue where Salesforce icon wouldn't show up on load in Edit Form screen
+* Web to Lead: Salesforce icon now shows properly on Edit Forms screen
+
+= 2.2 =
+* Added Salesforce picklist value mapping with Checkbox, Radio, Drop Down, and Multi Select fields. This feature dynamically pulls in fields from Salesforce so you don't need to re-create them. The downside? You need to modify default fields, field order in Salesforce.
+* Added fixes provided by <a href="http://wordpress.org/support/profile/gmcinnes">gmcinnes</a>: <a href="http://wordpress.org/support/topic/patch-make-sure-new-error-email-functionality-catches-exceptions">Make sure new error email functionality catches exceptions</a>, <a href="http://wordpress.org/support/topic/patch211-dont-send-empty-fields-to-salesforce">Don't send empty fields to Salesforce</a>, and <a href="http://wordpress.org/support/topic/patch211-make-sure-zeros-send-to-salesforce">Make sure to send zeros to Salesforce</a>
+
 = 2.1.1 =
-* Fixed issue <a href="http://wordpress.org/support/topic/plugin-gravity-forms-salesforce-add-on-no-settings-for-api-version?replies=2">reported here</a> with fatal error
+* Fixed issue <a href="http://wordpress.org/support/topic/plugin-gravity-forms-salesforce-add-on-no-settings-for-api-version">reported here</a> with fatal error
 
 = 2.1 =
 * Fixed: Added support for multiselect fields other fields with multiple responses
@@ -119,7 +134,7 @@ This plugin is released under a GPL license.
 * Added: You can have Salesforce export errors emailed to you when they occur (API plugin only)
 
 = 2.0.2 =
-* Fixed issue with HTML encoding to <a href="http://wordpress.org/support/topic/submitting?replies=2">fix SOAP fatal error</a>. Thanks, gmcinnes!
+* Fixed issue with HTML encoding to <a href="http://wordpress.org/support/topic/submitting">fix SOAP fatal error</a>. Thanks, gmcinnes!
 
 = 2.0.1 =
 * Renamed the plugin files so that you wouldn't need to re-activate.
@@ -151,8 +166,22 @@ This plugin is released under a GPL license.
 
 == Upgrade Notice ==
 
+= 2.2.2 =
+* Added Salesforce picklist value mapping with Checkbox, Radio, Drop Down, and Multi Select fields. This feature dynamically pulls in fields from Salesforce so you don't need to re-create them. The downside? You need to modify default fields, field order in Salesforce.
+* Added fixes provided by <a href="http://wordpress.org/support/profile/gmcinnes">gmcinnes</a>: <a href="http://wordpress.org/support/topic/patch-make-sure-new-error-email-functionality-catches-exceptions">Make sure new error email functionality catches exceptions</a>, <a href="http://wordpress.org/support/topic/patch211-dont-send-empty-fields-to-salesforce">Don't send empty fields to Salesforce</a>, and <a href="http://wordpress.org/support/topic/patch211-make-sure-zeros-send-to-salesforce">Make sure to send zeros to Salesforce</a>
+* Added Edit Form and Preview Form links to Salesforce.com Feeds list
+
+= 2.2.1 =
+* Made live updating optional with radio button
+* Added cache time dropdown
+* Refreshes transients when changing cache time
+
+= 2.2 =
+* Added Salesforce picklist value mapping with Checkbox, Radio, Drop Down, and Multi Select fields. This feature dynamically pulls in fields from Salesforce so you don't need to re-create them. The downside? You need to modify default fields, field order in Salesforce.
+* Added fixes provided by <a href="http://wordpress.org/support/profile/gmcinnes">gmcinnes</a>: <a href="http://wordpress.org/support/topic/patch-make-sure-new-error-email-functionality-catches-exceptions">Make sure new error email functionality catches exceptions</a>, <a href="http://wordpress.org/support/topic/patch211-dont-send-empty-fields-to-salesforce">Don't send empty fields to Salesforce</a>, and <a href="http://wordpress.org/support/topic/patch211-make-sure-zeros-send-to-salesforce">Make sure to send zeros to Salesforce</a>
+
 = 2.1.1 =
-* Fixed issue <a href="http://wordpress.org/support/topic/plugin-gravity-forms-salesforce-add-on-no-settings-for-api-version?replies=2">reported here</a> with fatal error
+* Fixed issue <a href="http://wordpress.org/support/topic/plugin-gravity-forms-salesforce-add-on-no-settings-for-api-version">reported here</a> with fatal error
 
 = 2.1 =
 * Added: Entries now get assigned a Salesforce ID that link directly to the Salesforce contact or object (API plugin only)
@@ -160,7 +189,7 @@ This plugin is released under a GPL license.
 * Added: You can have Salesforce export errors emailed to you when they occur (API plugin only)
 
 = 2.0.2 =
-* Fixed issue with HTML encoding to <a href="http://wordpress.org/support/topic/submitting?replies=2">fix SOAP fatal error</a>. Thanks, gmcinnes!
+* Fixed issue with HTML encoding to <a href="http://wordpress.org/support/topic/submitting">fix SOAP fatal error</a>. Thanks, gmcinnes!
 
 = 2.0 =
 * Complete rewrite; switched to SOAP API. Will require re-configuring the plugin.

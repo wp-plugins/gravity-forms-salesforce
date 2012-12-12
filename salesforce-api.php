@@ -3,12 +3,12 @@
 Plugin Name: Gravity Forms Salesforce API Add-On
 Plugin URI: http://www.seodenver.com/salesforce/
 Description: Integrates Gravity Forms with Salesforce allowing form submissions to be automatically sent to your Salesforce account
-Version: 2.1.1
+Version: 2.2.2
 Author: Katz Web Services, Inc.
 Author URI: http://www.katzwebservices.com
 
 ------------------------------------------------------------------------
-Copyright 2011 Katz Web Services, Inc.
+Copyright 2012 Katz Web Services, Inc.
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -35,14 +35,24 @@ class GFSalesforce {
     private static $path = "gravity-forms-salesforce/salesforce.php";
     private static $url = "http://formplugin.com";
     private static $slug = "gravity-forms-salesforce";
-    private static $version = "2.1.1";
+    private static $version = "2.2.2";
     private static $min_gravityforms_version = "1.3.9";
     private static $is_debug = NULL;
+    private static $cache_time = 86400; // 24 hours
+    private static $settings = array(
+                "username" => '',
+                "password" => '',
+                'securitytoken' => '',
+                "debug" => false,
+                'notify' => false,
+                "notifyemail" => '',
+                'cache_time' => 86400,
+            );
 
     //Plugin starting point. Will load appropriate files
     public static function init(){
         global $pagenow;
-
+        require_once(self::get_base_path() . "/edit-form.php");
         if($pagenow === 'plugins.php') {
             add_action("admin_notices", array('GFSalesforce', 'is_gravity_forms_installed'), 10);
         }
@@ -64,17 +74,18 @@ class GFSalesforce {
            return;
         }
 
+        self::$settings = get_option("gf_salesforce_settings");
+
         if(is_admin()){
             //loading translations
             load_plugin_textdomain('gravity-forms-salesforce', FALSE, '/gravity-forms-salesforce/languages' );
-
-            add_filter("transient_update_plugins", array('GFSalesforce', 'check_update'));
-            #add_filter("site_transient_update_plugins", array('GFSalesforce', 'check_update'));
 
             //creates a new Settings page on Gravity Forms' settings screen
             if(self::has_access("gravityforms_salesforce")){
                 RGForms::add_settings_page("Salesforce", array("GFSalesforce", "settings_page"), self::get_base_url() . "/images/salesforce-50x50.png");
             }
+
+            self::refresh_transients();
         }
 
         //integrating with Members plugin
@@ -92,7 +103,6 @@ class GFSalesforce {
             //loading data lib
             require_once(self::get_base_path() . "/data.php");
 
-
             //loading Gravity Forms tooltips
             require_once(GFCommon::get_base_path() . "/tooltips.php");
             add_filter('gform_tooltips', array('GFSalesforce', 'tooltips'));
@@ -100,8 +110,7 @@ class GFSalesforce {
             //runs the setup when version changes
             self::setup();
 
-         }
-         else if(in_array(RG_CURRENT_PAGE, array("admin-ajax.php"))){
+         } else if(in_array(RG_CURRENT_PAGE, array("admin-ajax.php"))){
 
             //loading data class
             require_once(self::get_base_path() . "/data.php");
@@ -115,6 +124,28 @@ class GFSalesforce {
             add_action("gform_post_submission", array('GFSalesforce', 'export'), 10, 2);
         }
         add_action('gform_entry_info', array('GFSalesforce', 'entry_info_link_to_salesforce'), 10, 2);
+    }
+
+    private function refresh_transients($force = false)
+    {
+        global $wpdb;
+
+        if($force || (isset($_GET['refresh']) && current_user_can('administrator') && $_GET['refresh'] === 'transients')) {
+            $wpdb->query("DELETE FROM {$wpdb->options} WHERE `option_name` LIKE ('%_transient_sfgf_%')");
+        }
+    }
+
+    //Returns true if the current page is one of Gravity Forms pages. Returns false if not
+    public static function is_gravity_page($page = array()){
+        if(!class_exists('RGForms')) { return false; }
+        $current_page = trim(strtolower(RGForms::get("page")));
+        if(empty($page)) {
+            $gf_pages = array("gf_edit_forms","gf_new_form","gf_entries","gf_settings","gf_export","gf_help");
+        } else {
+            $gf_pages = is_array($page) ? $page : array($page);
+        }
+
+        return in_array($current_page, $gf_pages);
     }
 
     public static function is_gravity_forms_installed($asd = '', $echo = true) {
@@ -230,15 +261,13 @@ EOD;
 
     public static function is_debug() {
         if(is_null(self::$is_debug)) {
-            $settings = get_option("gf_salesforce_settings");
-            self::$is_debug = !empty($settings['debug']) && current_user_can('manage_options');
+            self::$is_debug = !empty(self::$settings['debug']) && current_user_can('manage_options');
         }
         return self::$is_debug;
     }
 
     public static function is_notify_on_error() {
-        $settings = get_option("gf_salesforce_settings");
-        $settings['notifyemail'] = trim(rtrim($settings['notifyemail']));
+        $settings['notifyemail'] = trim(rtrim(self::$settings['notifyemail']));
         if(!empty($settings['notifyemail']) && is_email($settings['notifyemail'])) {
             return $settings['notifyemail'];
         } else {
@@ -260,12 +289,18 @@ EOD;
         }
         else if(isset($_POST["gf_salesforce_submit"])){
             check_admin_referer("update", "gf_salesforce_update");
+
+            // If the new transient time is less than the old, we can assume they want it cleared out.
+            if(floatval($_POST["gf_salesforce_cache_time"]) < floatval(self::$settings['cache_time'])) {
+                self::refresh_transients(true);
+            }
             $settings = array(
                 "username" => stripslashes($_POST["gf_salesforce_username"]),
                 "password" => stripslashes($_POST["gf_salesforce_password"]),
                 "securitytoken" => stripslashes($_POST["gf_salesforce_securitytoken"]),
                 "debug" => isset($_POST["gf_salesforce_debug"]),
                 "notifyemail" => trim(rtrim(esc_html($_POST["gf_salesforce_notifyemail"]))),
+                'cache_time' => floatval($_POST["gf_salesforce_cache_time"])
             );
             update_option("gf_salesforce_settings", $settings);
         }
@@ -279,7 +314,8 @@ EOD;
                 'securitytoken' => '',
                 "debug" => false,
                 'notify' => false,
-                "notifyemail" => ''
+                "notifyemail" => '',
+                'cache_time' => 86400,
             ));
 
         $api = self::get_api($settings);
@@ -348,9 +384,27 @@ EOD;
                     </td>
                 </tr>
                 <tr>
+                    <th scope="row"><label for="gf_salesforce_cache_time"><?php _e("Remote Cache Time", "gravity-forms-salesforce"); ?></label><span class="howto"><?php _e("This is an advanced setting. You likely won't need to change this.", "gravity-forms-salesforce"); ?></span></th>
+                    <td>
+
+                        <select name="gf_salesforce_cache_time" id="gf_salesforce_cache_time">
+                            <option value="60" <?php selected($settings["cache_time"] == '60', true); ?>><?php _e('One Minute (for testing only!)', 'gravity-forms-salesforce'); ?></option>
+                            <option value="3600" <?php selected($settings["cache_time"] == '3600', true); ?>><?php _e('One Hour', 'gravity-forms-salesforce'); ?></option>
+                            <option value="21600" <?php selected($settings["cache_time"] == '21600', true); ?>><?php _e('Six Hours', 'gravity-forms-salesforce'); ?></option>
+                            <option value="43200" <?php selected($settings["cache_time"] == '43200', true); ?>><?php _e('12 Hours', 'gravity-forms-salesforce'); ?></option>
+                            <option value="86400" <?php selected(empty($settings["cache_time"]) || $settings["cache_time"] == '86400', true); ?>><?php _e('1 Day', 'gravity-forms-salesforce'); ?></option>
+                            <option value="172800" <?php selected($settings["cache_time"] == '172800', true); ?>><?php _e('2 Days', 'gravity-forms-salesforce'); ?></option>
+                            <option value="259200" <?php selected($settings["cache_time"] == '259200', true); ?>><?php _e('3 Days', 'gravity-forms-salesforce'); ?></option>
+                            <option value="432000" <?php selected($settings["cache_time"] == '432000', true); ?>><?php _e('5 Days', 'gravity-forms-salesforce'); ?></option>
+                            <option value="604800" <?php selected($settings["cache_time"] == '604800', true); ?>><?php _e('1 Week', 'gravity-forms-salesforce'); ?></option>
+                        </select>
+                        <span class="howto"><?php _e('How long should form and field data be stored? This affects how often remote picklists will be checked for the Live Remote Field Mapping feature.', 'gravity-forms-salesforce'); ?></span>
+                        <span class="howto"><?php _e(sprintf("%sRefresh now%s.", '<a href="'.add_query_arg('refresh', 'transients').'">','</a>'), "gravity-forms-salesforce"); ?></span>
+                    </td>
+                </tr>
+                <tr>
                     <td colspan="2" ><input type="submit" name="gf_salesforce_submit" class="button-primary" value="<?php _e("Save Settings", "gravity-forms-salesforce") ?>" /></td>
                 </tr>
-
             </table>
             <div>
 
@@ -467,6 +521,7 @@ EOD;
 
                         $settings = GFSalesforceData::get_feeds();
                         if(is_array($settings) && !empty($settings)){
+
                             foreach($settings as $setting){
                                 ?>
                                 <tr class='author-self status-inherit' valign="top">
@@ -482,7 +537,16 @@ EOD;
 
                                             <span class="edit">
                                             <a title="<?php _e("Delete", "gravity-forms-salesforce") ?>" href="javascript: if(confirm('<?php _e("Delete this feed? ", "gravity-forms-salesforce") ?> <?php _e("\'Cancel\' to stop, \'OK\' to delete.", "gravity-forms-salesforce") ?>')){ DeleteSetting(<?php echo $setting["id"] ?>);}"><?php _e("Delete", "gravity-forms-salesforce")?></a>
+                                            |
+                                            </span>
 
+                                            <span class="edit">
+                                            <a title="<?php _e("Edit Form", "gravity-forms-salesforce") ?>" href="<?php echo add_query_arg(array('page' => 'gf_edit_forms', 'id' => $setting['form_id']), admin_url('admin.php')); ?>"><?php _e("Edit Form", "gravity-forms-salesforce")?></a>
+                                            |
+                                            </span>
+
+                                            <span class="edit">
+                                            <a title="<?php _e("Preview Form", "gravity-forms-salesforce") ?>" href="<?php echo add_query_arg(array('gf_page' => 'preview', 'id' => $setting['form_id']), site_url()); ?>"><?php _e("Preview Form", "gravity-forms-salesforce")?></a>
                                             </span>
                                         </div>
                                     </td>
@@ -551,7 +615,7 @@ EOD;
         <?php
     }
 
-    private static function get_api($settings = array()){
+    public static function get_api($settings = array()){
         if(!class_exists("SforcePartnerClient")) {
             require_once plugin_dir_path(__FILE__).'developerforce/include/SforcePartnerClient.php';
         }
@@ -560,7 +624,10 @@ EOD;
         if(!empty(self::$api)) { return self::$api; }
 
         if(!is_array($settings) || empty($settings)) {
-            $settings = get_option("gf_salesforce_settings");
+            $settings = self::$settings;
+            if(!is_array($settings) || empty($settings)) {
+                $settings = get_option("gf_salesforce_settings");
+            }
         }
 
         if(!is_array($settings) || empty($settings)) {
@@ -581,12 +648,40 @@ EOD;
         }
     }
 
-    public function getFields($objectType = 'account') {
+    public function getField($objectType = 'account', $field_name = '') {
+
+        // Cache the field to save lookups.
+        // Sha1 is to ensure length is correct.
+        $field = get_site_transient('sfgf_'.sha1('lists_'.$objectType.'_'.$field_name));
+        if($field && !is_wp_error($field) && !(current_user_can('administrator') && (isset($_REQUEST['refresh']) || isset($_REQUEST['cache'])))) { return $field; }
+
+        $fields = self::getFields($objectType);
+
+        foreach($fields as $field) {
+            if($field['tag'] === $field_name) {
+                set_site_transient('sfgf_'.sha1('lists_'.$objectType.'_'.$field_name), $field, self::$settings['cache_time']);
+                return $field;
+            }
+        }
+    }
+
+    public function getFields($objectType = 'account', $type = null) {
                 // One of two options: fields or objects
         $listtype = ($listtype !== 'objects') ? 'fields' : 'objects';
 
         $lists = get_site_transient('sfgf_lists_fields_'.$objectType);
         if($lists && (!isset($_REQUEST['refresh']) || (isset($_REQUEST['refresh']) && $_REQUEST['refresh'] !== 'lists'))) {
+            foreach($lists as $key => $list) {
+                // If you only want one type of field, and it's not that type, keep going
+                if(!empty($type)) {
+                    if(
+                        (is_string($type) && $list['type'] !== $type) ||
+                        (is_array($type) && !in_array($list['type'], $type))
+                    ) {
+                        unset($lists[$key]);
+                    }
+                }
+            }
             return $lists;
         }
 
@@ -598,23 +693,38 @@ EOD;
 
         if(!is_object($accountdescribe) || !isset($accountdescribe->fields)) { return false; }
 
-        $lists = array();
+        $lists = $field_details = array();
         foreach($accountdescribe->fields as $Field) {
 
             if(!is_object($Field)) { continue; }
 
-            $lists[] = array(
+            $field_details = array(
                 'name' => esc_js($Field->label),
                 'req' => (!empty($Field->createable) && empty($Field->nillable) && empty($Field->defaultedOnCreate)),
                 'tag' => esc_js($Field->name),
                 'type' => $Field->type,
                 'length' => $Field->length,
+                'picklistValues' => isset($Field->picklistValues) ? $Field->picklistValues : null
             );
+
+            $all_lists[] = $field_details;
+
+            // If you only want one type of field, and it's not that type, keep going
+            if(!empty($type)) {
+                if(
+                    (is_string($type) && $Field->type !== $type) ||
+                    (is_array($type) && !in_array($Field->type, $type))
+                ) {
+                    continue;
+                }
+            }
+
+            $lists[] = $field_details;
         }
 
         asort($lists);
 
-        set_site_transient('sfgf_lists_fields_'.$objectType, $lists);
+        set_site_transient('sfgf_lists_fields_'.$objectType, $all_lists, self::$settings['cache_time']);
 
         return $lists;
     }
@@ -644,7 +754,7 @@ EOD;
 
         asort($lists);
 
-        set_site_transient('sfgf_objects', $lists);
+        set_site_transient('sfgf_objects', $lists, self::$settings['cache_time']);
 
         return $lists;
 
@@ -926,22 +1036,15 @@ EOD;
         $('#salesforce_field_list').live('load', function() {
             $('.salesforce_field_cell select').each(function() {
                 var $select = $(this);
-                if($().prop) {
-                    var label = $.trim($('label[for='+$(this).prop('name')+']').text());
-                } else {
-                    var label = $.trim($('label[for='+$(this).attr('name')+']').text());
-                }
+                var label = $.trim($('label[for='+$(this).prop('name')+']').text());
+
                 label = label.replace(' *', '');
 
                 if($select.val() === '') {
                     $('option', $select).each(function() {
 
                         if($(this).text() === label) {
-                            if($().prop) {
-                                $(this).prop('selected', true);
-                            } else {
-                                $(this).attr('selected', true);
-                            }
+                            $(this).prop('selected', true);
                         }
                     });
                 }
@@ -1176,7 +1279,7 @@ jQuery(document).ready(function() {
             if($var['type'] === 'reference' && apply_filters('gf_salesforce_skip_reference_types', true)) { continue; }
 
             $selected_field = isset($config["meta"]["field_map"][$var["tag"]]) ? $config["meta"]["field_map"][$var["tag"]] : false;
-            $required = $var["req"] === true ? "<span class='gfield_required' title='This field is required.'>*</span>" : "";
+            $required = $var["req"] === true ? "<span class='gfield_required' title='This field is required.'>(Required)</span>" : "";
             $error_class = $var["req"] === true && empty($selected_field) && !empty($_POST["gf_salesforce_submit"]) ? " feeds_validation_error" : "";
             $field_desc = '';
             if(self::show_field_type_desc($var['type'])) {
@@ -1327,8 +1430,12 @@ jQuery(document).ready(function() {
                 $merge_vars[$var_tag] = self::get_address($entry, $field_id);
             } else if($var_tag  == 'country') {
                 $merge_vars[$var_tag] = empty($entry[$field_id]) ? '' : GFCommon::get_country_code(trim($entry[$field_id]));
+            }
+            // If, for example an user enters 0 in a text field type expecting a number
+            else if($entry[$field_id] === "0") {
+                $merge_vars[$var_tag] = "0";
             } else if($var_tag != "email") {
-                if(!empty($entry[$field_id])) {
+                if(!empty($entry[$field_id]) && !($entry[$field_id] == "0")) {
                     switch($input_type) {
                         case 'multiselect':
                             // If there are commas in the value, this makes it so it can be comma exploded.
@@ -1358,7 +1465,17 @@ jQuery(document).ready(function() {
                     $merge_vars[$var_tag] = implode(';',array_map('htmlspecialchars', $elements));
                 }
             }
+
         }
+
+        // Make sure the charset is UTF-8 for Salesforce.
+        $merge_vars = array_map(array('GFSalesforce', '_convert_to_utf_8'), $merge_vars);
+
+        // Don't send merge_vars that are empty. It can cause problems with Salesforce strict typing.  For example,
+        // if the form has a text field where a number should go, but that number isn't always required, when it's
+        // not supplied, we don't want to send <var></var> to Salesforce. It might choke because it expects a Double
+        // data type, not an empty string
+        $merge_vars = array_filter($merge_vars, array('GFSalesforce', '_remove_empty_fields'));
 
         $account = new SObject();
 
@@ -1367,7 +1484,17 @@ jQuery(document).ready(function() {
         // Object type
         $account->type = $feed['meta']['contact_object_name'];
 
-        $result = $api->create(array($account));
+        try {
+            $result = $api->create(array($account));
+            $api_exception = '';
+        } catch (Exception $e) {
+            $api_exception = "Message: "  . $e->getMessage() .
+                             "\nFaultstring: " . $e->faultstring .
+                             "\nFile: " . $e->getFile() .
+                             "\nLine: " . $e->getLine() .
+                             "\nArgs: ". serialize($merge_vars) .
+                             "\nTrace: " . serialize($e->getTrace());
+        }
 
         $debug = '';
         if(self::is_debug()) {
@@ -1378,7 +1505,8 @@ jQuery(document).ready(function() {
                     'Salesforce Posted Merge Data' => $merge_vars,
                     'Posted Data ($_POST)' => $_POST,
                     'result' => $result[0],
-                    '$api' => $api
+                    '$api' => $api,
+                    '$api_exception' => $api_exception,
                 ), true).'</pre>';
         }
 
@@ -1402,9 +1530,24 @@ jQuery(document).ready(function() {
                 wp_mail($email,__('Error adding to Salesforce', 'gravity-forms-salesforce'), $message, $headers);
             }
 
-            self::add_note($entry["id"], sprintf(__('Errors when adding to Salesforce: %s', 'gravity-forms-salesforce'), $errors->message));
+            self::add_note($entry["id"], sprintf(__('Errors when adding to Salesforce: %s', 'gravity-forms-salesforce'), $errors->message.$api_exception));
 
             return false;
+        }
+    }
+
+    function _remove_empty_fields($merge_var) {
+        return (
+            (function_exists('mb_strlen') && mb_strlen($merge_var) > 0) ||
+            !function_exists('mb_strlen') && strlen($merge_var) > 0
+        );
+    }
+
+    function _convert_to_utf_8($merge_var) {
+        if(function_exists('mb_convert_encoding')) {
+            return mb_convert_encoding($merge_var, "UTF-8");
+        } else {
+            return $merge_var;
         }
     }
 
@@ -1551,7 +1694,7 @@ jQuery(document).ready(function() {
     }
 
     //Returns the url of the plugin's root folder
-    protected function get_base_url(){
+    public function get_base_url(){
         return plugins_url(null, __FILE__);
     }
 

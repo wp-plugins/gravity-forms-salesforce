@@ -2,7 +2,7 @@
 /*
 Plugin Name: Gravity Forms Salesforce Web to Lead Add-On
 Description: Integrate <a href="http://formplugin.com?r=salesforce">Gravity Forms</a> with Salesforce - form submissions are automatically sent to your Salesforce account!
-Version: 2.1.1
+Version: 2.2.1
 Author: Katz Web Services, Inc.
 Author URI: http://www.katzwebservices.com
 
@@ -161,7 +161,7 @@ EOD;
         		}
         	}
 
-        	if(!empty($activeforms)) {
+            if(!empty($activeforms)) {
 
 ?>
 <style type="text/css">
@@ -175,8 +175,10 @@ EOD;
 </style>
 <script type="text/javascript">
 	jQuery(document).ready(function($) {
-		$('table tbody.user-list tr').each(function() {
-			if($('td.column-id', $(this)).text() == <?php echo implode('||', $activeforms); ?>) {
+        SFWebtoLeadForms = [<?php echo implode(',', $activeforms); ?>];
+        $('table tbody.user-list tr').each(function() {
+            value = $('th.check-column input', $(this)).val();
+            if($.inArray(parseInt(value), SFWebtoLeadForms) > -1) {
 				$('td a.row-title', $(this)).append('<span class="salesforce_enabled" title="<?php _e('Salesforce integration is enabled for this Form', "gravity-forms-salesforce"); ?>"></span>');
 			}
 		});
@@ -214,7 +216,8 @@ EOD;
 
 <script type="text/javascript">
 	jQuery(document).ready(function($) {
-		$('#gform_settings_tab_2 .gforms_form_settings').append("<li><input type='checkbox' id='gform_enable_salesforce' /> <label for='gform_enable_salesforce' id='gform_enable_salesforce_label'><?php _e("Enable Salesforce integration", "gravity-forms-salesforce") ?> <?php echo $tooltip; ?></label></li>");
+
+        $('#gform_settings_tab_2 .gforms_form_settings').append("<li><input type='checkbox' id='gform_enable_salesforce' /> <label for='gform_enable_salesforce' id='gform_enable_salesforce_label'><?php _e("Enable Salesforce integration", "gravity-forms-salesforce") ?> <?php echo $tooltip; ?></label></li>");
 
 		if($().prop) {
 			$("#gform_enable_salesforce").prop("checked", form.enableSalesforce ? true : false);
@@ -222,7 +225,7 @@ EOD;
 			$("#gform_enable_salesforce").attr("checked", form.enableSalesforce ? true : false);
 		}
 
-		$("#gform_enable_salesforce").live('click change load', function(e) {
+		$("#gform_enable_salesforce").live('click change load ready', function(e) {
 
 			var checked = $(this).is(":checked")
 
@@ -236,7 +239,7 @@ EOD;
 
 			SortFields(); // Update the form object to include the new enableSalesforce setting
 
-		}).trigger('load');
+		}).trigger('ready');
 
 		$('.tooltip_form_salesforce').qtip({
 	         content: $('.tooltip_form_salesforce').attr('tooltip'), // Use the tooltip attribute of the element for the content
