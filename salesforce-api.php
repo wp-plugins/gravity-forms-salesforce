@@ -3,7 +3,7 @@
 Plugin Name: Gravity Forms Salesforce API Add-On
 Plugin URI: http://www.seodenver.com/salesforce/
 Description: Integrates Gravity Forms with Salesforce allowing form submissions to be automatically sent to your Salesforce account
-Version: 2.2.2
+Version: 2.2.3
 Author: Katz Web Services, Inc.
 Author URI: http://www.katzwebservices.com
 
@@ -35,7 +35,7 @@ class GFSalesforce {
     private static $path = "gravity-forms-salesforce/salesforce.php";
     private static $url = "http://formplugin.com";
     private static $slug = "gravity-forms-salesforce";
-    private static $version = "2.2.2";
+    private static $version = "2.2.3";
     private static $min_gravityforms_version = "1.3.9";
     private static $is_debug = NULL;
     private static $cache_time = 86400; // 24 hours
@@ -281,7 +281,6 @@ EOD;
         if(isset($_POST["uninstall"])){
             check_admin_referer("uninstall", "gf_salesforce_uninstall");
             self::uninstall();
-
             ?>
             <div class="updated fade" style="padding:20px;"><?php _e(sprintf("Gravity Forms Salesforce Add-On has been successfully uninstalled. It can be re-activated from the %splugins page%s.", "<a href='plugins.php'>","</a>"), "gravity-forms-salesforce")?></div>
             <?php
@@ -323,7 +322,7 @@ EOD;
 
         $message = '';
 
-        if(!empty($settings["username"]) && !empty($settings["password"]) && !empty($api) && is_object($api)){
+        if(!empty($settings["username"]) && !empty($settings["password"]) && self::api_is_valid($api)){
             $message = sprintf(__("Valid configuration. Now go %sconfigure form integration with Salesforce%s!", "gravity-forms-salesforce"), '<a href="'.admin_url('admin.php?page=gf_salesforce').'">', '</a>');
             $class = "updated valid_credentials";
             $valid = true;
@@ -463,6 +462,7 @@ EOD;
             <?php
         }
 
+        $api = self::get_api();
         ?>
         <div class="wrap">
             <img alt="<?php _e("Salesforce.com Feeds", "gravity-forms-salesforce") ?>" src="<?php echo self::get_base_url()?>/images/salesforce-50x50.png" style="float:left; margin:0 7px 0 0;" width="50" height="50" />
@@ -470,10 +470,20 @@ EOD;
             <a class="button add-new-h2" href="admin.php?page=gf_salesforce&view=edit&id=0"><?php _e("Add New", "gravity-forms-salesforce") ?></a>
             </h2>
 
+            <?php
+                if(!self::api_is_valid($api)){
+            ?>
+            <div class="error" id="message" style="margin-top:20px;">
+                <h3><?php _e('Salesforce Error', "gravity-forms-salesforce");?></h3>
+                <p><?php echo empty($api) ? __(sprintf("To get started, please configure your %sSalesforce Settings%s.", '<a href="admin.php?page=gf_settings&addon=Salesforce">', "</a>"), "gravity-forms-salesforce") : $api; ?></p>
+            </div>
+            <?php
+                } else {
+            ?>
             <div class="updated" id="message" style="margin-top:20px;">
                 <p><?php _e('Do you like this free plugin? <a href="http://katz.si/gfsfrate">Please review it on WordPress.org</a>! <small class="description alignright">Note: You must be logged in to WordPress.org to leave a review!</small>', 'gravity-forms-salesforce'); ?></p>
             </div>
-
+            <?php } ?>
             <div class="clear"></div>
             <ul class="subsubsub" style="margin-top:0;">
                 <li><a href="<?php echo admin_url('admin.php?page=gf_settings&addon=Salesforce'); ?>">Salesforce Settings</a> |</li>
@@ -556,8 +566,7 @@ EOD;
                             }
                         }
                         else {
-                            $api = self::get_api();
-                            if(!empty($api) && empty($api->lastError)){
+                            if(self::api_is_valid($api)){
                                 ?>
                                 <tr>
                                     <td colspan="4" style="padding:20px;">
@@ -615,6 +624,18 @@ EOD;
         <?php
     }
 
+    private function api_is_valid($api) {
+        #self::r($api);
+
+        if($api === false || is_string($api) || !empty($api->lastError)) {
+            return false;
+        }
+        if(is_a($api, 'SforcePartnerClient') && method_exists($api, 'getLastResponseHeaders') && preg_match('/200\sOK/ism', $api->getLastResponseHeaders())) {
+            return true;
+        }
+        return false;
+    }
+
     public static function get_api($settings = array()){
         if(!class_exists("SforcePartnerClient")) {
             require_once plugin_dir_path(__FILE__).'developerforce/include/SforcePartnerClient.php';
@@ -648,6 +669,14 @@ EOD;
         }
     }
 
+    public function r($content, $die = false) {
+        echo '<pre>';
+        print_r($content);
+        echo '</pre>';
+        if($die) { die(); }
+        return;
+    }
+
     public function getField($objectType = 'account', $field_name = '') {
 
         // Cache the field to save lookups.
@@ -669,7 +698,7 @@ EOD;
                 // One of two options: fields or objects
         $listtype = ($listtype !== 'objects') ? 'fields' : 'objects';
 
-        $lists = get_site_transient('sfgf_lists_fields_'.$objectType);
+        $lists = maybe_unserialize(get_site_transient('sfgf_lists_fields_'.$objectType));
         if($lists && (!isset($_REQUEST['refresh']) || (isset($_REQUEST['refresh']) && $_REQUEST['refresh'] !== 'lists'))) {
             foreach($lists as $key => $list) {
                 // If you only want one type of field, and it's not that type, keep going
@@ -687,7 +716,7 @@ EOD;
 
         $api = self::get_api();
 
-        if(!$api) { return false; }
+        if(!self::api_is_valid($api)) { return false; }
 
         $accountdescribe = $api->describeSObject($objectType);
 
@@ -739,7 +768,7 @@ EOD;
 
         $api = self::get_api();
 
-        if(!$api) { return false; }
+        if(!self::api_is_valid($api)) { return false; }
 
         $accountdescribe = $api->describeSObject("account");
 
@@ -795,7 +824,7 @@ EOD;
         $api = self::get_api();
 
         //ensures valid credentials were entered in the settings page
-        if(($api === false) || is_string($api)) {
+        if(!self::api_is_valid($api)) {
             ?>
             <div class="error" id="message" style="margin-top:20px;"><?php echo wpautop(sprintf(__("We are unable to login to Salesforce with the provided username and API key. Please make sure they are valid in the %sSettings Page%s", "gravity-forms-salesforce"), "<a href='?page=gf_settings&addon=Salesforce'>", "</a>")); ?></div>
             <?php
@@ -1218,7 +1247,7 @@ jQuery(document).ready(function() {
 
         $api = self::get_api();
 
-        if(($api === false) || is_string($api) || !isset($_POST["objectType"])) {
+        if(!self::api_is_valid($api) || !isset($_POST["objectType"])) {
             die("EndSelectForm();");
         }
 
@@ -1385,7 +1414,7 @@ jQuery(document).ready(function() {
         //Login to Salesforce
         $api = self::get_api();
 
-        if(($api === false) || is_string($api) || !preg_match('/200\sOK/ism', $api->getLastResponseHeaders())) {
+        if(!self::api_is_valid($api) || !preg_match('/200\sOK/ism', $api->getLastResponseHeaders())) {
             do_action('gf_salesforce_error', 'export', $api);
             return;
         }
@@ -1543,13 +1572,21 @@ jQuery(document).ready(function() {
         );
     }
 
-    function _convert_to_utf_8($merge_var) {
-        if(function_exists('mb_convert_encoding')) {
-            return mb_convert_encoding($merge_var, "UTF-8");
-        } else {
-            return $merge_var;
+    function _convert_to_utf_8($string) {
+
+        if(function_exists('mb_convert_encoding') && !seems_utf8($string)) {
+            $string = mb_convert_encoding($string, "UTF-8");
         }
+
+        // Remove control characters (like page break, etc.)
+        $string = preg_replace('/[[:cntrl:]]+/', '', $string);
+
+        // Escape XML characters like `< ' " & >`
+        $string = esc_attr($string);
+
+        return $string;
     }
+
 
     function entry_info_link_to_salesforce($form_id, $lead) {
         $salesforce_id = gform_get_meta($lead['id'], 'salesforce_id');
@@ -1608,78 +1645,6 @@ jQuery(document).ready(function() {
             return $is_correct_version;
         }
         else{
-            return false;
-        }
-    }
-
-    private function simpleXMLToArray($xml,
-                    $flattenValues=true,
-                    $flattenAttributes = true,
-                    $flattenChildren=true,
-                    $valueKey='@value',
-                    $attributesKey='@attributes',
-                    $childrenKey='@children'){
-
-        $return = array();
-        if(!($xml instanceof SimpleXMLElement)){return $return;}
-        $name = $xml->getName();
-        $_value = trim((string)$xml);
-        if(strlen($_value)==0){$_value = null;};
-
-        if($_value!==null){
-            if(!$flattenValues){$return[$valueKey] = $_value;}
-            else{$return = $_value;}
-        }
-
-        $children = array();
-        $first = true;
-        foreach($xml->children() as $elementName => $child){
-            $value = self::simpleXMLToArray($child, $flattenValues, $flattenAttributes, $flattenChildren, $valueKey, $attributesKey, $childrenKey);
-            if(isset($children[$elementName])){
-                if($first){
-                    $temp = $children[$elementName];
-                    unset($children[$elementName]);
-                    $children[$elementName][] = $temp;
-                    $first=false;
-                }
-                $children[$elementName][] = $value;
-            }
-            else{
-                $children[$elementName] = $value;
-            }
-        }
-        if(count($children)>0){
-            if(!$flattenChildren){$return[$childrenKey] = $children;}
-            else{$return = array_merge($return,$children);}
-        }
-
-        $attributes = array();
-        foreach($xml->attributes() as $name=>$value){
-            $attributes[$name] = trim($value);
-        }
-        if(count($attributes)>0){
-            if(!$flattenAttributes){$return[$attributesKey] = $attributes;}
-            else{$return = array_merge($return, $attributes);}
-        }
-
-        return $return;
-    }
-
-    private function convert_xml_to_object($response) {
-        $response = @simplexml_load_string($response);  // Added @ 1.2.2
-        if(is_object($response)) {
-            return $response;
-        } else {
-            return false;
-        }
-    }
-
-    private function convert_xml_to_array($response) {
-        $response = self::convert_xml_to_object($response);
-        $response = self::simpleXMLToArray($response);
-        if(is_array($response)) {
-            return $response;
-        } else {
             return false;
         }
     }
