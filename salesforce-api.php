@@ -2,8 +2,8 @@
 /*
 Plugin Name: Gravity Forms Salesforce API Add-On
 Plugin URI: http://www.seodenver.com/salesforce/
-Description: Integrates Gravity Forms with Salesforce allowing form submissions to be automatically sent to your Salesforce account
-Version: 2.2.3
+Description: Integrates <a href="http://formplugin.com?r=salesforce">Gravity Forms</a> with Salesforce allowing form submissions to be automatically sent to your Salesforce account
+Version: 2.2.4
 Author: Katz Web Services, Inc.
 Author URI: http://www.katzwebservices.com
 
@@ -32,10 +32,10 @@ class GFSalesforce {
 
     private static $name = "Gravity Forms Salesforce Add-On";
     private static $api = '';
-    private static $path = "gravity-forms-salesforce/salesforce.php";
+    private static $path = "gravity-forms-salesforce/salesforce-api.php";
     private static $url = "http://formplugin.com";
     private static $slug = "gravity-forms-salesforce";
-    private static $version = "2.2.3";
+    private static $version = "2.2.4";
     private static $min_gravityforms_version = "1.3.9";
     private static $is_debug = NULL;
     private static $cache_time = 86400; // 24 hours
@@ -121,7 +121,7 @@ class GFSalesforce {
         }
         else{
              //handling post submission.
-            add_action("gform_post_submission", array('GFSalesforce', 'export'), 10, 2);
+            add_action("gform_after_submission", array('GFSalesforce', 'export'), 10, 2);
         }
         add_action('gform_entry_info', array('GFSalesforce', 'entry_info_link_to_salesforce'), 10, 2);
     }
@@ -1447,8 +1447,6 @@ jQuery(document).ready(function() {
 
     private function create($entry, $form, $feed, $api) {
 
-
-
         $merge_vars = array();
         foreach($feed["meta"]["field_map"] as $var_tag => $field_id){
 
@@ -1517,12 +1515,13 @@ jQuery(document).ready(function() {
             $result = $api->create(array($account));
             $api_exception = '';
         } catch (Exception $e) {
-            $api_exception = "Message: "  . $e->getMessage() .
-                             "\nFaultstring: " . $e->faultstring .
-                             "\nFile: " . $e->getFile() .
-                             "\nLine: " . $e->getLine() .
-                             "\nArgs: ". serialize($merge_vars) .
-                             "\nTrace: " . serialize($e->getTrace());
+            $api_exception = "
+                Message: "  . $e->getMessage() .
+                "\nFaultstring: " . $e->faultstring .
+                "\nFile: " . $e->getFile() .
+                "\nLine: " . $e->getLine() .
+                "\nArgs: ". serialize($merge_vars) .
+                "\nTrace: " . serialize($e->getTrace());
         }
 
         $debug = '';
