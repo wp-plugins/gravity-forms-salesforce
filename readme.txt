@@ -111,6 +111,9 @@ This plugin is released under a GPL license.
 
 == Changelog ==
 
+= 2.2.4.1 =
+* Fixed issue introduced in 2.2.4 that prevented options from being editable when Salesforce Field Mapping was not enabled.
+
 = 2.2.4 =
 * Fixed issue with selecting Live Field Mapping where object information wouldn't load if there was an apostophe in the field name or description.
 * Improved Live Field Mapping display: disabled fields stay looking disabled on form save.
@@ -178,6 +181,9 @@ This plugin is released under a GPL license.
 * Launch!
 
 == Upgrade Notice ==
+
+= 2.2.4.1 =
+* Fixed issue introduced in 2.2.4 that prevented options from being editable when Salesforce Field Mapping was not enabled.
 
 = 2.2.4 =
 * Fixed issue with selecting Live Field Mapping where object information wouldn't load if there was an apostophe in the field name or description.
