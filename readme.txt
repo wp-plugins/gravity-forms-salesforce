@@ -1,7 +1,7 @@
 === Gravity Forms Salesforce Add-on ===
 Tags: gravity forms, forms, gravity, form, crm, gravity form, salesforce, salesforce plugin, form, forms, gravity, gravity form, gravity forms, secure form, simplemodal contact form, wp contact form, widget, sales force, customer, contact, contacts, address, addresses, address book
 Requires at least: 2.8
-Tested up to: 3.5
+Tested up to: 3.5.1
 Stable tag: trunk
 Contributors: katzwebdesign,katzwebservices
 Donate link:https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=zackkatz%40gmail%2ecom&item_name=Gravity%20Forms%20Salesforce%20Addon&no_shipping=0&no_note=1&tax=0&currency_code=USD&lc=US&bn=PP%2dDonationsBF&charset=UTF%2d8
@@ -10,7 +10,7 @@ Integrate the remarkable Gravity Forms plugin with Salesforce.
 
 == Description ==
 
-### This is the best WordPress Salesforce plugin, hands down.
+### This is *the* best WordPress Salesforce plugin.
 
 ### Integrate Your Forms with Salesforce
 Add one setting, check a box when configuring your forms, and all your form entries will be added to Salesforce from now on. <strong>Integrating with Salesforce has never been so simple.</strong>
@@ -63,7 +63,7 @@ If you have questions, comments, or issues with this plugin, <strong>please leav
 == Frequently Asked Questions ==
 
 = Do I need both plugins activated? =
-No, you only need one, and the __API plugin is recommended__: the Web to Lead plugin is no longer being actively developed.
+No, you only need one, and the __API plugin is recommended__: the Web to Lead plugin is no longer being actively developed. __If you are using Web to Lead, you don't need the API plugin activated. If you are using the API plugin, you don't need the Web to Lead activated.__
 
 = What are the server requirements? =
 Your server must support the following:
@@ -92,11 +92,11 @@ Add the following to your theme's `functions.php` file. Modify as you see fit:
 add_filter('gf_salesforce_lead_source', 'make_my_own_lead_source', 1, 3);
 
 function make_my_own_lead_source($lead_source, $form_meta, $data) {
-	// $lead_source - What was about to be used (normally Gravity Forms Form Title)
-	// $form_meta - Gravity Forms form details
-	// $data - The data passed to Salesforce
+    // $lead_source - What was about to be used (normally Gravity Forms Form Title)
+    // $form_meta - Gravity Forms form details
+    // $data - The data passed to Salesforce
 
-	return $lead_source; // Return something else if you want to.
+    return $lead_source; // Return something else if you want to.
 }
 `
 
@@ -110,6 +110,12 @@ You can find your Custom Fields under [Your Name] &rarr; Setup &rarr; Leads &rar
 This plugin is released under a GPL license.
 
 == Changelog ==
+
+= 2.2.4 =
+* Fixed issue with selecting Live Field Mapping where object information wouldn't load if there was an apostophe in the field name or description.
+* Improved Live Field Mapping display: disabled fields stay looking disabled on form save.
+* Fixed issue where Live Field Mapping would not send form data properly. This was caused by the plugin wrongly assigning "inputs" to the fields, causing the field IDs not to match upon submit.
+* Fixed version number on Gravity Forms Salesforce Web to Lead Add-On so that it won't always seem like there's an update waiting.
 
 = 2.2.3 =
 * Fixed issue where Web to Lead Form Editor would no longer load if Salesforce API plugin was enabled and not configured. <a href="http://wordpress.org/support/topic/since-v-222-upgrade-cant-edit-any-forms">As reported here</a> and <a href="http://wordpress.org/support/topic/php-fatal-error-with-invalid-credentials">here</a>.
@@ -155,8 +161,8 @@ This plugin is released under a GPL license.
 
 = 1.1.2 =
 * Fixed issue where entered Salesforce field mapping labels were being overwritten by auto-labeling.
-	- Added filter `gf_salesforce_autolabel` to turn off auto-labeling by adding `add_filter('gf_salesforce_autolabel', '__return_false');` to your theme's functions.php file.
-	- Made auto-labeling much less aggressive: now only matches exact matches for First Name, Company, etc.
+    - Added filter `gf_salesforce_autolabel` to turn off auto-labeling by adding `add_filter('gf_salesforce_autolabel', '__return_false');` to your theme's functions.php file.
+    - Made auto-labeling much less aggressive: now only matches exact matches for First Name, Company, etc.
 * Added support for checkboxes and other multiple-item fields using `implode()` PHP functionality: lists will be converted to comma-separated values.
 
 = 1.1.1 =
@@ -172,6 +178,12 @@ This plugin is released under a GPL license.
 * Launch!
 
 == Upgrade Notice ==
+
+= 2.2.4 =
+* Fixed issue with selecting Live Field Mapping where object information wouldn't load if there was an apostophe in the field name or description.
+* Improved Live Field Mapping display: disabled fields stay looking disabled on form save.
+* Fixed issue where Live Field Mapping would not send form data properly. This was caused by the plugin wrongly assigning "inputs" to the fields, causing the field IDs not to match upon submit.
+* Fixed version number on Gravity Forms Salesforce Web to Lead Add-On so that it won't always seem like there's an update waiting.
 
 = 2.2.3 =
 * Fixed issue where Web to Lead Form Editor would no longer load if Salesforce API plugin was enabled and not configured. <a href="http://wordpress.org/support/topic/since-v-222-upgrade-cant-edit-any-forms">As reported here</a> and <a href="http://wordpress.org/support/topic/php-fatal-error-with-invalid-credentials">here</a>.
@@ -210,8 +222,8 @@ This plugin is released under a GPL license.
 
 = 1.1.2 =
 * Fixed issue where entered Salesforce field mapping labels were being overwritten by auto-labeling.
-	- Added filter `gf_salesforce_autolabel` to turn off auto-labeling by adding `add_filter('gf_salesforce_autolabel', '__return_false');` to your theme's functions.php file.
-	- Made auto-labeling much less aggressive: now only matches exact matches for First Name, Company, etc.
+    - Added filter `gf_salesforce_autolabel` to turn off auto-labeling by adding `add_filter('gf_salesforce_autolabel', '__return_false');` to your theme's functions.php file.
+    - Made auto-labeling much less aggressive: now only matches exact matches for First Name, Company, etc.
 * Added support for checkboxes and other multiple-item fields using `implode()` PHP functionality: lists will be converted to comma-separated values.
 
 = 1.1.1 =
