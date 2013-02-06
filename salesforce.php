@@ -2,7 +2,7 @@
 /*
 Plugin Name: Gravity Forms Salesforce Web to Lead Add-On
 Description: Integrate <a href="http://formplugin.com?r=salesforce">Gravity Forms</a> with Salesforce - form submissions are automatically sent to your Salesforce account!
-Version: 2.2.4
+Version: 2.2.4.1
 Author: Katz Web Services, Inc.
 Author URI: http://www.katzwebservices.com
 

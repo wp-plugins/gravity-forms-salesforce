@@ -292,14 +292,10 @@ class GFSalesforce_FieldMapping {
 
             <?php if(!apply_filters('disable_salesforce_choices', true)) { echo 'return;'; } ?>
 
-            // If it's one-time, no disabling.
-            if(jQuery('input[name=salesforce_map_type]:checked').val() === 'once') {
-                enableChoices = true;
-            } else {
-                enableChoices = false;
-            }
+            var field = GetSelectedField();
 
-            if(enableChoices === true) {
+            // If it's not yet set, or if you're just populating choices one-time, no disabling.
+            if(!field.salesforceMapEnabled || jQuery('input[name=salesforce_map_type]:checked').length === 0 || jQuery('input[name=salesforce_map_type]:checked').val() === 'once') {
                 // Enable modifying the choices.
                 jQuery('#field_choices input').attr('disabled', false);
 

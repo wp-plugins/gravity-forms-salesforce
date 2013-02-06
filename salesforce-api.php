@@ -3,7 +3,7 @@
 Plugin Name: Gravity Forms Salesforce API Add-On
 Plugin URI: http://www.seodenver.com/salesforce/
 Description: Integrates <a href="http://formplugin.com?r=salesforce">Gravity Forms</a> with Salesforce allowing form submissions to be automatically sent to your Salesforce account
-Version: 2.2.4
+Version: 2.2.4.1
 Author: Katz Web Services, Inc.
 Author URI: http://www.katzwebservices.com
 
@@ -699,7 +699,7 @@ EOD;
         $listtype = ($listtype !== 'objects') ? 'fields' : 'objects';
 
         $lists = maybe_unserialize(get_site_transient('sfgf_lists_fields_'.$objectType));
-        if($lists && (!isset($_REQUEST['refresh']) || (isset($_REQUEST['refresh']) && $_REQUEST['refresh'] !== 'lists'))) {
+        if($lists && !empty($lists) && is_array($lists) && (!isset($_REQUEST['refresh']) || (isset($_REQUEST['refresh']) && $_REQUEST['refresh'] !== 'lists'))) {
             foreach($lists as $key => $list) {
                 // If you only want one type of field, and it's not that type, keep going
                 if(!empty($type)) {
@@ -847,7 +847,7 @@ EOD;
 
             $is_valid = true;
 
-            $merge_vars = self::getFields($_POST['gf_salesforce_list']);
+            $merge_vars = (array)self::getFields($_POST['gf_salesforce_list']);
 
             $field_map = array();
 
@@ -1303,7 +1303,7 @@ jQuery(document).ready(function() {
 
         $str = "<table cellpadding='0' cellspacing='0'><thead><tr><th scope='col' class='salesforce_col_heading'>" . __("List Fields", "gravity-forms-salesforce") . "</th><th scope='col' class='salesforce_col_heading'>" . __("Form Fields", "gravity-forms-salesforce") . "</th></tr></thead><tbody>";
 
-        foreach($merge_vars as $var){
+        foreach((array)$merge_vars as $var){
 
             if($var['type'] === 'reference' && apply_filters('gf_salesforce_skip_reference_types', true)) { continue; }
 
