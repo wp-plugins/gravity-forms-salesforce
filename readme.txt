@@ -111,6 +111,9 @@ This plugin is released under a GPL license.
 
 == Changelog ==
 
+= 2.2.4.2 =
+* Fixed one more issue with "Array" as submitted value when using select dropdown lists and Salesforce Field Mapping. *Note: after updating the plugin, you may need to re-save your affected forms.*
+
 = 2.2.4.1 =
 * Fixed issue introduced in 2.2.4 that prevented options from being editable when Salesforce Field Mapping was not enabled.
 
@@ -181,6 +184,9 @@ This plugin is released under a GPL license.
 * Launch!
 
 == Upgrade Notice ==
+
+= 2.2.4.2 =
+* Fixed one more issue with "Array" as submitted value when using select dropdown lists and Salesforce Field Mapping. *Note: after updating the plugin, you may need to re-save your affected forms.*
 
 = 2.2.4.1 =
 * Fixed issue introduced in 2.2.4 that prevented options from being editable when Salesforce Field Mapping was not enabled.
