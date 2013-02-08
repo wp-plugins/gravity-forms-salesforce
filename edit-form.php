@@ -67,7 +67,16 @@ class GFSalesforce_FieldMapping {
         }
 
         if(!empty($choices)) { $field['choices'] = $choices; }
-
+        switch($field['type']) {
+            case 'select':
+            case 'multiselect':
+                $field['inputs'] = '';
+                break;
+            case 'radio':
+            case 'checkboxes':
+                if(!empty($inputs)) { $field['inputs'] = $inputs; }
+                break;
+        }
         return $field;
     }
 
