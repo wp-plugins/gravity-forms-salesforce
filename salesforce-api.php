@@ -3,7 +3,7 @@
 Plugin Name: Gravity Forms Salesforce API Add-On
 Plugin URI: http://www.seodenver.com/salesforce/
 Description: Integrates <a href="http://formplugin.com?r=salesforce">Gravity Forms</a> with Salesforce allowing form submissions to be automatically sent to your Salesforce account
-Version: 2.2.4.2
+Version: 2.2.4.3
 Author: Katz Web Services, Inc.
 Author URI: http://www.katzwebservices.com
 
@@ -35,7 +35,7 @@ class GFSalesforce {
     private static $path = "gravity-forms-salesforce/salesforce-api.php";
     private static $url = "http://formplugin.com";
     private static $slug = "gravity-forms-salesforce";
-    private static $version = "2.2.4";
+    private static $version = "2.2.4.3";
     private static $min_gravityforms_version = "1.3.9";
     private static $is_debug = NULL;
     private static $cache_time = 86400; // 24 hours
@@ -53,7 +53,7 @@ class GFSalesforce {
     public static function init(){
         global $pagenow;
         require_once(self::get_base_path() . "/edit-form.php");
-        if($pagenow === 'plugins.php') {
+        if($pagenow === 'plugins.php' && is_admin()) {
             add_action("admin_notices", array('GFSalesforce', 'is_gravity_forms_installed'), 10);
         }
 
@@ -165,7 +165,7 @@ class GFSalesforce {
 EOD;
             }
 
-            if(!empty($message) && $echo) {
+            if(!empty($message) && $echo && is_admin() && did_action( 'admin_notices' )) {
                 if(empty($showed_is_gravity_forms_installed)) {
                     echo '<div id="message" class="updated">'.$message.'</div>';
                     $showed_is_gravity_forms_installed = true;

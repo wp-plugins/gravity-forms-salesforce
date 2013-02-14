@@ -2,7 +2,7 @@
 /*
 Plugin Name: Gravity Forms Salesforce Web to Lead Add-On
 Description: Integrate <a href="http://formplugin.com?r=salesforce">Gravity Forms</a> with Salesforce - form submissions are automatically sent to your Salesforce account!
-Version: 2.2.4.2
+Version: 2.2.4.3
 Author: Katz Web Services, Inc.
 Author URI: http://www.katzwebservices.com
 
@@ -33,14 +33,14 @@ class GFSalesforceWebToLead {
     private static $path = "gravity-forms-salesforce/salesforce.php";
     private static $url = "http://www.gravityforms.com";
     private static $slug = "gravity-forms-salesforce";
-    private static $version = "2.2.4";
+    private static $version = "2.2.4.3";
     private static $min_gravityforms_version = "1.3.9";
 
     //Plugin starting point. Will load appropriate files
     public static function init(){
         global $pagenow;
 
-        if($pagenow === 'plugins.php') {
+        if($pagenow === 'plugins.php' && is_admin()) {
             add_action("admin_notices", array('GFSalesforceWebToLead', 'is_gravity_forms_installed'), 10);
         }
 
@@ -88,7 +88,7 @@ class GFSalesforceWebToLead {
         add_filter("gform_confirmation", array('GFSalesforceWebToLead', 'confirmation_error'));
     }
 
-     public static function is_gravity_forms_installed($asd = '', $echo = true) {
+    public static function is_gravity_forms_installed($asd = '', $echo = true) {
         global $pagenow, $page, $showed_is_gravity_forms_installed; $message = '';
 
         $installed = 0;
@@ -105,9 +105,11 @@ class GFSalesforceWebToLead {
 EOD;
             }
 
-            if(empty($showed_is_gravity_forms_installed)) {
-                echo '<div id="message" class="updated">'.$message.'</div>';
-                $showed_is_gravity_forms_installed = true;
+            if(!empty($message) && $echo && is_admin() && did_action( 'admin_notices' )) {
+                if(empty($showed_is_gravity_forms_installed)) {
+                    echo '<div id="message" class="updated">'.$message.'</div>';
+                    $showed_is_gravity_forms_installed = true;
+                }
             }
         } else {
             return true;

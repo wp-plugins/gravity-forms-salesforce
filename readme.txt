@@ -111,6 +111,10 @@ This plugin is released under a GPL license.
 
 == Changelog ==
 
+= 2.2.4.3 =
+* Fixed issue that should never have happened, but did: the "Gravity Forms Not Installed" message showed up for an user on the front-end of their site and prevented them from logging in.
+* Fixed admin PHP Notice when gravity forms is not activated
+
 = 2.2.4.2 =
 * Fixed one more issue with "Array" as submitted value when using select dropdown lists and Salesforce Field Mapping. *Note: after updating the plugin, you may need to re-save your affected forms.*
 
@@ -184,6 +188,10 @@ This plugin is released under a GPL license.
 * Launch!
 
 == Upgrade Notice ==
+
+= 2.2.4.3 =
+* Fixed issue that should never have happened, but did: the "Gravity Forms Not Installed" message showed up for an user on the front-end of their site and prevented them from logging in.
+* Fixed admin PHP Notice when gravity forms is not activated
 
 = 2.2.4.2 =
 * Fixed one more issue with "Array" as submitted value when using select dropdown lists and Salesforce Field Mapping. *Note: after updating the plugin, you may need to re-save your affected forms.*

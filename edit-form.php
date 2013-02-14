@@ -11,7 +11,7 @@ class GFSalesforce_FieldMapping {
                 add_action( "gform_editor_js", array(&$this, "editor_js")); // Now we execute some javascript technicalitites for the field to load correctly
                 add_action("gform_field_standard_settings", array(&$this,"use_as_entry_link_settings"), 10, 2);
                 add_action('admin_head', array(&$this, 'admin_head'));
-            } else if(in_array(RG_CURRENT_PAGE, array("admin-ajax.php"))) {
+            } else if(defined('RG_CURRENT_PAGE') && in_array(RG_CURRENT_PAGE, array("admin-ajax.php"))) {
                 // Get the list of fields available for the object type
                 add_action('wp_ajax_select_salesforce_object', array(&$this, 'select_salesforce_object_type'));
             }
