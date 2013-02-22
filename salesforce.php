@@ -2,7 +2,7 @@
 /*
 Plugin Name: Gravity Forms Salesforce Web to Lead Add-On
 Description: Integrate <a href="http://formplugin.com?r=salesforce">Gravity Forms</a> with Salesforce - form submissions are automatically sent to your Salesforce account!
-Version: 2.2.4.3
+Version: 2.2.4.4
 Author: Katz Web Services, Inc.
 Author URI: http://www.katzwebservices.com
 
@@ -449,11 +449,10 @@ For more information on custom fields, %sread this Salesforce.com Help Article%s
 
         $sub = $debug ? 'test' : 'www';
 
-#       echo '<pre>'; print_r($args); die();
-
         $result = wp_remote_post('https://'.$sub.'.salesforce.com/servlet/servlet.WebToLead?encoding=UTF-8', $args);
 
-        if(wp_remote_retrieve_response_code($result) !== 200) { // Server is down.
+        $code = wp_remote_retrieve_response_code($result);
+        if((int)$code !== 200) { // Server may be down.
             return array();
         } elseif(!isset($result['headers']['is-processed'])) { // For a valid debug test
             return $result;

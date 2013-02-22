@@ -111,6 +111,9 @@ This plugin is released under a GPL license.
 
 == Changelog ==
 
+= 2.2.4.4 =
+* Fixed Web To Lead issue causing "Salesforce.com is temporarily unavailable. Please try again in a few minutes." message. <a href="http://wordpress.org/support/topic/response-code-bug">Thanks, @atimmer</a>.
+
 = 2.2.4.3 =
 * Fixed issue that should never have happened, but did: the "Gravity Forms Not Installed" message showed up for an user on the front-end of their site and prevented them from logging in.
 * Fixed admin PHP Notice when gravity forms is not activated
@@ -188,6 +191,9 @@ This plugin is released under a GPL license.
 * Launch!
 
 == Upgrade Notice ==
+
+= 2.2.4.4 =
+* Fixed Web To Lead issue causing "Salesforce.com is temporarily unavailable. Please try again in a few minutes." message. <a href="http://wordpress.org/support/topic/response-code-bug">Thanks, @atimmer</a>.
 
 = 2.2.4.3 =
 * Fixed issue that should never have happened, but did: the "Gravity Forms Not Installed" message showed up for an user on the front-end of their site and prevented them from logging in.
