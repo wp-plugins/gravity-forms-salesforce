@@ -2,7 +2,7 @@
 /*
 Plugin Name: Gravity Forms Salesforce Web to Lead Add-On
 Description: Integrate <a href="http://formplugin.com?r=salesforce">Gravity Forms</a> with Salesforce - form submissions are automatically sent to your Salesforce account!
-Version: 2.2.4.4
+Version: 2.2.6
 Author: Katz Web Services, Inc.
 Author URI: http://www.katzwebservices.com
 
@@ -33,7 +33,7 @@ class GFSalesforceWebToLead {
     private static $path = "gravity-forms-salesforce/salesforce.php";
     private static $url = "http://www.gravityforms.com";
     private static $slug = "gravity-forms-salesforce";
-    private static $version = "2.2.4.3";
+    private static $version = "2.2.5";
     private static $min_gravityforms_version = "1.3.9";
 
     //Plugin starting point. Will load appropriate files
@@ -82,6 +82,8 @@ class GFSalesforceWebToLead {
         #add_action("gform_field_advanced_settings", array('GFSalesforceWebToLead',"add_salesforce_editor_field"), 10, 2); // For future use
 
         add_action("gform_editor_js", array('GFSalesforceWebToLead', 'add_form_option_js'), 10);
+        add_action("gform_properties_settings", array('GFSalesforceWebToLead', 'add_form_option_js'), 100);
+
 
         add_filter('gform_tooltips', array('GFSalesforceWebToLead', 'add_form_option_tooltip'));
 
@@ -191,7 +193,9 @@ EOD;
         }
     }
 
-    public static function add_form_option_js() {
+    public static function add_form_option_js($location = 100) {
+        if($location !== 100) { return; }
+
         ob_start();
             gform_tooltip("form_salesforce");
             $tooltip = ob_get_contents();
@@ -219,7 +223,7 @@ EOD;
 <script type="text/javascript">
     jQuery(document).ready(function($) {
 
-        $('#gform_settings_tab_2 .gforms_form_settings').append("<li><input type='checkbox' id='gform_enable_salesforce' /> <label for='gform_enable_salesforce' id='gform_enable_salesforce_label'><?php _e("Enable Salesforce integration", "gravity-forms-salesforce") ?> <?php echo $tooltip; ?></label></li>");
+        $('#gform_settings_tab_2 .gforms_form_settings, #gform_tab_container_1').append("<li><input type='checkbox' id='gform_enable_salesforce' /> <label for='gform_enable_salesforce' id='gform_enable_salesforce_label'><?php _e("Enable Salesforce integration", "gravity-forms-salesforce") ?> <?php echo $tooltip; ?></label></li>");
 
         if($().prop) {
             $("#gform_enable_salesforce").prop("checked", form.enableSalesforce ? true : false);
@@ -238,8 +242,6 @@ EOD;
             } else {
                 $("#gform_title .salesforce").remove();
             }
-
-            SortFields(); // Update the form object to include the new enableSalesforce setting
 
         }).trigger('ready');
 
@@ -510,12 +512,35 @@ For more information on custom fields, %sread this Salesforce.com Help Article%s
                 continue;
             }
 
-            if( is_array($field["inputs"]) ){
+            if( is_array($field["inputs"]) || is_array($field["choices"]) ){
                 $valuearray = array();
-               //handling multi-input fields such as name and address
-               foreach($field["inputs"] as $inputKey => $input){
-                   $value = trim(rtrim(stripslashes(@$_POST["input_" . str_replace('.', '_', $input["id"])])));
-                   $label = self::getLabel($input["label"], $field, $input);
+                $fieldtemp = array();
+                $multi_input = true;
+
+                // set multi-input array to loop through
+                if ( is_array($field["inputs"])) {
+                    $fieldtemp = $field["inputs"];
+
+                }
+                else {
+                    $fieldtemp = $_POST["input_" . $field["id"]];
+                    $multi_input = false;
+                    $label = self::getLabel($field["label"], $field);
+                }
+
+               //handling multi-input fields such as name and address or choices
+
+               foreach($fieldtemp as $inputKey => $input){
+                   //set the value and label
+                   if ($multi_input == true) {
+                       // inputs is an array
+                       $value = trim(rtrim(stripslashes(@$_POST["input_" . str_replace('.', '_', $input["id"])])));
+                       $label = self::getLabel($input["label"], $field, $input);
+                   }
+                   else {
+                       // choices is an array
+                       $value = $input;
+                   }
                    if(!$label) { $label = self::getLabel($field['label'], $field, $input); }
                    if ($label == 'BothNames' && !empty($value)) {
                         $names = explode(" ", $value);
@@ -536,7 +561,7 @@ For more information on custom fields, %sread this Salesforce.com Help Article%s
                         $salesforce = $value;
                    } else {
                         if(!empty($field['inputName']) && (apply_filters('gf_salesforce_use_inputname', true) === true)) {
-                            $valuearray["{$field['inputName']}"][] = $value;
+                            $valuearray["{$field['inputName']}"][] = $input;
                         } elseif(!empty($field['adminLabel']) && (apply_filters('gf_salesforce_use_adminlabel', true) === true)) {
                             $valuearray["{$field['adminLabel']}"][] = $value;
                         } elseif((!empty($data["{$label}"]) && !empty($value) && $value !== '0') || empty($data["{$label}"]) && array_key_exists("{$label}", $defaults)) {
@@ -544,11 +569,14 @@ For more information on custom fields, %sread this Salesforce.com Help Article%s
                         }
                    }
                }
+
+               // after looping through multi-input fields set the value
                if(isset($valuearray["{$field['adminLabel']}"])) {
-                    $data[$label] = implode(apply_filters('gf_salesforce_implode_glue', ', '), $valuearray["{$field['adminLabel']}"]);
+                    $data[$label] = implode(apply_filters('gf_salesforce_implode_glue', ';'), $valuearray["{$field['adminLabel']}"]);
                } elseif(isset($valuearray["{$field['inputName']}"])) {
                     $data[$label] = implode(apply_filters('gf_salesforce_implode_glue', ', '), $valuearray["{$field['inputName']}"]);
                }
+
            } else {
                //handling single-input fields such as text and paragraph (textarea)
                $value = trim(rtrim(stripslashes(@$_POST["input_" . $field["id"]])));
