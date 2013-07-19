@@ -65,6 +65,35 @@ If you have questions, comments, or issues with this plugin, <strong>please leav
 = Do I need both plugins activated? =
 No, you only need one, and the __API plugin is recommended__: the Web to Lead plugin is no longer being actively developed. __If you are using Web to Lead, you don't need the API plugin activated. If you are using the API plugin, you don't need the Web to Lead activated.__
 
+
+= Web to Lead: My input values are being cut off in Salesforce =
+If you are submitting to a "Multi PickList" field in Salesforce, the values need to be separated with ';' instead of ','. Add a filter to your `functions.php` file:
+
+`
+add_filter('gf_salesforce_implode_glue', 'change_salesforce_implode_glue');
+
+/**
+ * Change the way the data is submitted to salesforce to force submission as multi picklist values.
+ * @param  string $glue  ',' or ';'
+ * @param  array $field The field to modify the glue for
+ * @return string        ',' or ';'
+ */
+function change_salesforce_implode_glue($glue, $field) {
+
+	// Change this to the Salesforce API Name of the field that's not being passed properly.
+	$name_of_sf_field = 'ExampleMultiSelectPicklist__c';
+
+	// If the field being checked is the Salesforce field that is being truncated, return ';'
+	if($field['inputName'] === $name_of_sf_field || $field['adminLabel'] === $name_of_sf_field) {
+		return ';';
+	}
+
+	// Otherwise, return default.
+	return $glue;
+}
+
+`
+
 = What are the server requirements? =
 Your server must support the following:
 
@@ -110,6 +139,11 @@ You can find your Custom Fields under [Your Name] &rarr; Setup &rarr; Leads &rar
 This plugin is released under a GPL license.
 
 == Changelog ==
+
+= 2.2.7 =
+* Updated Web to Lead
+	- Fixed Lists input type
+	- Fixed issue where checkboxes and multiselects were being added as Array
 
 = 2.2.6 =
 * Updated Web to Lead to work with Gravity Forms 1.7+ form settings screens
@@ -194,6 +228,12 @@ This plugin is released under a GPL license.
 * Launch!
 
 == Upgrade Notice ==
+
+= 2.2.7 =
+* Web to Lead
+	- Fixed Lists input type
+	- Fixed issue where checkboxes and multiselects were being added as Array
+* No changes to API
 
 = 2.2.6 =
 * Updated Web to Lead to work with Gravity Forms 1.7+ form settings screens
