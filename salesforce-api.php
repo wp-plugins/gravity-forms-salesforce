@@ -3,7 +3,7 @@
 Plugin Name: Gravity Forms Salesforce API Add-On
 Plugin URI: http://www.seodenver.com/salesforce/
 Description: Integrates <a href="http://formplugin.com?r=salesforce">Gravity Forms</a> with Salesforce allowing form submissions to be automatically sent to your Salesforce account
-Version: 2.3
+Version: 2.3.1
 Author: Katz Web Services, Inc.
 Author URI: http://www.katzwebservices.com
 
@@ -37,7 +37,7 @@ class GFSalesforce {
     private static $path = "gravity-forms-salesforce/salesforce-api.php";
     private static $url = "http://formplugin.com";
     private static $slug = "gravity-forms-salesforce";
-    private static $version = "2.3";
+    private static $version = "2.3.1";
     private static $min_gravityforms_version = "1.3.9";
     private static $is_debug = NULL;
     private static $cache_time = 86400; // 24 hours
@@ -777,21 +777,26 @@ EOD;
 
         if(!self::api_is_valid($api)) { return false; }
 
-        $objects = $api->describeGlobal();
+        try {
+            $objects = $api->describeGlobal();
 
-        if(empty($objects) || !is_object($objects) || !isset($objects->sobjects)) { return false; }
+            if(empty($objects) || !is_object($objects) || !isset($objects->sobjects)) { return false; }
 
-        $lists = array();
-        foreach ($objects->sobjects as $object) {
-            if(!is_object($object) || empty($object->createable)) { continue; }
-            $lists[$object->name] = esc_html( $object->label );
+            $lists = array();
+            foreach ($objects->sobjects as $object) {
+                if(!is_object($object) || empty($object->createable)) { continue; }
+                $lists[$object->name] = esc_html( $object->label );
+            }
+
+            asort($lists);
+
+            set_site_transient('sfgf_objects', $lists, self::$settings['cache_time']);
+
+            return $lists;
+
+        } catch (Exception $e) {
+            return false;
         }
-
-        asort($lists);
-
-        set_site_transient('sfgf_objects', $lists, self::$settings['cache_time']);
-
-        return $lists;
 
     }
 
@@ -917,7 +922,7 @@ EOD;
                     <?php
                     foreach ($lists as $name => $label){
                         ?>
-                        <option value="<?php echo esc_html($name) ?>" <?php selected(($name === $config["meta"]["contact_object_name"])); ?>><?php echo esc_html($label) ?></option>
+                        <option value="<?php echo esc_html($name) ?>" <?php selected(isset($config["meta"]["contact_object_name"]) && ($name === $config["meta"]["contact_object_name"])); ?>><?php echo esc_html($label) ?></option>
                         <?php
                     }
                     ?>
@@ -1444,7 +1449,6 @@ jQuery(document).ready(function() {
     }
 
     public static function export_feed($entry, $form, $feed, $api){
-        $email = $entry[(int)$feed["meta"]["field_map"]["email"]];
 
         if(empty($feed["meta"]["contact_object_name"])) {
             return false;
@@ -1469,7 +1473,7 @@ jQuery(document).ready(function() {
                 $merge_vars[$var_tag] = empty($entry[$field_id]) ? '' : GFCommon::get_country_code(trim($entry[$field_id]));
             }
             // If, for example an user enters 0 in a text field type expecting a number
-            else if($entry[$field_id] === "0") {
+            else if(isset($entry[$field_id]) && $entry[$field_id] === "0") {
                 $merge_vars[$var_tag] = "0";
             } else if($var_tag != "email") {
                 if(!empty($entry[$field_id]) && !($entry[$field_id] == "0")) {
@@ -1549,7 +1553,9 @@ jQuery(document).ready(function() {
         }
 
         if  (isset($result[0]) && !empty($result[0]->success)) {
-            if(self::is_debug()) { echo '<h2>Success</h2>'.$debug; }
+            if(self::is_debug()) {
+                echo '<h2>Success</h2>'.'<h3>This is only visible to administrators. To disable this code from being displayed, uncheck the "Debug Form Submissions for Administrators" box in the <a href="'.admin_url('admin.php?page=gf_settings&addon=Salesforce').'">Gravity Forms Salesforce</a> settings.</h3>'.$debug;
+            }
             gform_update_meta($entry['id'], 'salesforce_id', $result[0]->id);
             self::add_note($entry["id"], sprintf(__('Successfully added to Salesforce with ID #%s . View entry at %s', 'gravity-forms-salesforce'), $result[0]->id, 'https://na9.salesforce.com/'.$result[0]->id));
             return $result[0]->id;
@@ -1559,6 +1565,7 @@ jQuery(document).ready(function() {
 
             if(self::is_debug()) {
                 echo '<h2>Error</h2>'.$debug;
+                '<h3>This is only visible to administrators. To disable this code from being displayed, uncheck the "Debug Form Submissions for Administrators" box in the <a href="'.admin_url('admin.php?page=gf_settings&addon=Salesforce').'">Gravity Forms Salesforce</a> settings.</h3>';
                 echo '<h2>Errors</h2><pre>'.print_r($errors, true).'</pre>';
             }
 
