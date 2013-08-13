@@ -8,7 +8,7 @@ Author: Katz Web Services, Inc.
 Author URI: http://www.katzwebservices.com
 
 ------------------------------------------------------------------------
-Copyright 2012 Katz Web Services, Inc.
+Copyright 2013 Katz Web Services, Inc.
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -702,9 +702,6 @@ EOD;
     }
 
     public function getFields($objectType = 'account', $type = null) {
-        // One of two options: fields or objects
-        $listtype = ($listtype !== 'objects') ? 'fields' : 'objects';
-
         $lists = maybe_unserialize(get_site_transient('sfgf_lists_fields_'.$objectType));
         if($lists && !empty($lists) && is_array($lists) && (!isset($_REQUEST['refresh']) || (isset($_REQUEST['refresh']) && $_REQUEST['refresh'] !== 'lists'))) {
             foreach($lists as $key => $list) {
