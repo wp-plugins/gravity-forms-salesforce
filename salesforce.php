@@ -609,7 +609,7 @@ For more information on custom fields, %sread this Salesforce.com Help Article%s
                     $message = 'true';
                    $data['description'] = empty($data['description']) ? $value."\n" : $data['description']."\n".$value."\n";
                } else if($label == 'street') {
-                    $data['street'] .= $value."\n";
+                    $data['street'] = isset($data['street']) ? $data['street'].$value."\n" : $value."\n";
                } else if (trim(strtolower($label)) == 'salesforce' ) {
                     $salesforce = $value;
                } else {
