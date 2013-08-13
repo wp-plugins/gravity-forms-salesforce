@@ -667,7 +667,7 @@ EOD;
             $conn = new SforcePartnerClient();
             $conn->createconnection(plugin_dir_path(__FILE__).'developerforce/include/partner.wsdl.xml');
             $mylogin = $conn->login($username,$password.$securitytoken);
-            self::$api = $conn;
+            self::$api = apply_filters('gf_salesforce_connection', $conn);
             return $conn;
         } catch(Exception $e) {
             return isset($e->faultstring) ? $e->faultstring : false;
