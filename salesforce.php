@@ -2,7 +2,7 @@
 /*
 Plugin Name: Gravity Forms Salesforce Web to Lead Add-On
 Description: Integrate <a href="http://formplugin.com?r=salesforce">Gravity Forms</a> with Salesforce - form submissions are automatically sent to your Salesforce account!
-Version: 2.2.7
+Version: 2.2.8
 Author: Katz Web Services, Inc.
 Author URI: http://www.katzwebservices.com
 
@@ -33,7 +33,7 @@ class GFSalesforceWebToLead {
     private static $path = "gravity-forms-salesforce/salesforce.php";
     private static $url = "http://www.gravityforms.com";
     private static $slug = "gravity-forms-salesforce";
-    private static $version = "2.2.7";
+    private static $version = "2.2.8";
     private static $min_gravityforms_version = "1.3.9";
 
     //Plugin starting point. Will load appropriate files
@@ -245,18 +245,30 @@ EOD;
 
         }).trigger('ready');
 
-        $('.tooltip_form_salesforce').qtip({
-             content: $('.tooltip_form_salesforce').attr('tooltip'), // Use the tooltip attribute of the element for the content
-             show: { delay: 200, solo: true },
-             hide: { when: 'mouseout', fixed: true, delay: 200, effect: 'fade' },
-             style: 'gformsstyle', // custom tooltip style
-             position: {
-                corner: {
-                    target: 'topRight'
-                    ,tooltip: 'bottomLeft'
+        if($.qtip || $.fn.qtip) {
+            $('.tooltip_form_salesforce').qtip({
+                 content: $('.tooltip_form_salesforce').attr('tooltip'), // Use the tooltip attribute of the element for the content
+                 show: { delay: 200, solo: true },
+                 hide: { when: 'mouseout', fixed: true, delay: 200, effect: 'fade' },
+                 style: 'gformsstyle', // custom tooltip style
+                 position: {
+                    corner: {
+                        target: 'topRight'
+                        ,tooltip: 'bottomLeft'
+                    }
+                 }
+            });
+        } else {
+            // This is necessary because we're dynamically adding the tooltip via JS
+            jQuery( ".tooltip_form_salesforce" ).tooltip({
+                show: 500,
+                hide: 1000,
+                content: function () {
+                    return jQuery(this).prop('title');
                 }
-             }
-        });
+            });
+        }
+
     });
 </script><?php
     }

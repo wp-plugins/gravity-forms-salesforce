@@ -1,6 +1,6 @@
 === Gravity Forms Salesforce Add-on ===
 Tags: gravity forms, forms, gravity, form, crm, gravity form, salesforce, salesforce plugin, form, forms, gravity, gravity form, gravity forms, secure form, simplemodal contact form, wp contact form, widget, sales force, customer, contact, contacts, address, addresses, address book
-Requires at least: 2.8
+Requires at least: 3.2
 Tested up to: 3.6
 Stable tag: trunk
 Contributors: katzwebdesign,katzwebservices
@@ -62,10 +62,6 @@ If you have questions, comments, or issues with this plugin, <strong>please leav
 
 == Frequently Asked Questions ==
 
-= Do I need both plugins activated? =
-No, you only need one, and the __API plugin is recommended__: the Web to Lead plugin is no longer being actively developed. __If you are using Web to Lead, you don't need the API plugin activated. If you are using the API plugin, you don't need the Web to Lead activated.__
-
-
 = Web to Lead: My input values are being cut off in Salesforce =
 If you are submitting to a "Multi PickList" field in Salesforce, the values need to be separated with ';' instead of ','. Add a filter to your `functions.php` file:
 
@@ -93,6 +89,10 @@ function change_salesforce_implode_glue($glue, $field) {
 }
 
 `
+
+
+= Do I need both plugins activated? =
+No, you only need one, and the __API plugin is recommended__: the Web to Lead plugin is no longer being actively developed. __If you are using Web to Lead, you don't need the API plugin activated. If you are using the API plugin, you don't need the Web to Lead activated.__
 
 = What are the server requirements? =
 Your server must support the following:
@@ -139,6 +139,11 @@ You can find your Custom Fields under [Your Name] &rarr; Setup &rarr; Leads &rar
 This plugin is released under a GPL license.
 
 == Changelog ==
+
+= 2.3 =
+* API: __Now fully supports custom objects!__
+* API: Fixed error with endless spinning when choosing "Select the form to tap into"
+* Web to Lead: Fixed <a href="http://wordpress.org/support/topic/form-editing-broken-with-saleforce-web-to-lead">issue</a> on Form Settings page caused by Gravity Forms 1.7.7 update.
 
 = 2.2.7 =
 * Updated Web to Lead
@@ -229,11 +234,15 @@ This plugin is released under a GPL license.
 
 == Upgrade Notice ==
 
+= 2.3 =
+* API: __Now fully supports custom objects!__
+* API: Fixed error with endless spinning when choosing "Select the form to tap into"
+* Web to Lead: Fixed <a href="http://wordpress.org/support/topic/form-editing-broken-with-saleforce-web-to-lead">issue</a> on Form Settings page caused by Gravity Forms 1.7.7 update.
+
 = 2.2.7 =
-* Web to Lead
+* Updated Web to Lead
 	- Fixed Lists input type
 	- Fixed issue where checkboxes and multiselects were being added as Array
-* No changes to API
 
 = 2.2.6 =
 * Updated Web to Lead to work with Gravity Forms 1.7+ form settings screens
