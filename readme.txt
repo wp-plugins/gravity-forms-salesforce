@@ -140,12 +140,15 @@ This plugin is released under a GPL license.
 
 == Changelog ==
 
-= 2.3 & 2.3.1 =
+= 2.3 & 2.3.1 & 2.3.2 =
 * API
 	* __Now fully supports custom objects!__
 	* Fixed error with endless spinning when choosing "Select the form to tap into"
 	* Fixed a few PHP notices
-* Web to Lead: Fixed <a href="http://wordpress.org/support/topic/form-editing-broken-with-saleforce-web-to-lead">issue</a> on Form Settings page caused by Gravity Forms 1.7.7 update.
+	* Now supports line breaks in submitted content
+* Web to Lead
+	* Fixed <a href="http://wordpress.org/support/topic/form-editing-broken-with-saleforce-web-to-lead">issue</a> on Form Settings page caused by Gravity Forms 1.7.7 update.
+	* Now properly handles data with `'` and `"` - no longer adds slashes
 
 = 2.2.7 =
 * Updated Web to Lead
@@ -236,12 +239,15 @@ This plugin is released under a GPL license.
 
 == Upgrade Notice ==
 
-= 2.3 & 2.3.1 =
+= 2.3 & 2.3.1 & 2.3.2 =
 * API
 	* __Now fully supports custom objects!__
 	* Fixed error with endless spinning when choosing "Select the form to tap into"
 	* Fixed a few PHP notices
-* Web to Lead: Fixed <a href="http://wordpress.org/support/topic/form-editing-broken-with-saleforce-web-to-lead">issue</a> on Form Settings page caused by Gravity Forms 1.7.7 update.
+	* Now supports line breaks in submitted content
+* Web to Lead
+	* Fixed <a href="http://wordpress.org/support/topic/form-editing-broken-with-saleforce-web-to-lead">issue</a> on Form Settings page caused by Gravity Forms 1.7.7 update.
+	* Now properly handles data with `'` and `"` - no longer adds slashes
 
 = 2.2.7 =
 * Updated Web to Lead

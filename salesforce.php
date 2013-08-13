@@ -2,7 +2,7 @@
 /*
 Plugin Name: Gravity Forms Salesforce Web to Lead Add-On
 Description: Integrate <a href="http://formplugin.com?r=salesforce">Gravity Forms</a> with Salesforce - form submissions are automatically sent to your Salesforce account!
-Version: 2.3.1
+Version: 2.3.2
 Author: Katz Web Services, Inc.
 Author URI: http://www.katzwebservices.com
 
@@ -33,7 +33,7 @@ class GFSalesforceWebToLead {
     private static $path = "gravity-forms-salesforce/salesforce.php";
     private static $url = "http://www.gravityforms.com";
     private static $slug = "gravity-forms-salesforce";
-    private static $version = "2.3.1";
+    private static $version = "2.3.2";
     private static $min_gravityforms_version = "1.3.9";
 
     //Plugin starting point. Will load appropriate files
@@ -535,13 +535,12 @@ For more information on custom fields, %sread this Salesforce.com Help Article%s
 
                 }
                 else {
-                    $fieldtemp = @$_POST["input_" . $field["id"]];
+                    $fieldtemp = isset($_POST["input_" . $field["id"]]) ? $_POST["input_" . $field["id"]] : '';
                     $multi_input = false;
                     $label = self::getLabel($field["label"], $field);
                 }
 
                //handling multi-input fields such as name and address or choices
-
                foreach((array)$fieldtemp as $inputKey => $input){
                    //set the value and label
                    if ($multi_input == true) {
@@ -636,6 +635,7 @@ For more information on custom fields, %sread this Salesforce.com Help Article%s
         $lead_source = isset($form_meta['title']) ? $form_meta['title'] : 'Gravity Forms Form';
         $data['lead_source'] = apply_filters('gf_salesforce_lead_source', $lead_source, $form_meta, $data);
         $data['debug']          = 0;
+        $data = array_map('stripslashes', $data);
         $result = self::send_request($data);
 
         if($result && !empty($result)) {

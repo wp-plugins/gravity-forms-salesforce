@@ -3,7 +3,7 @@
 Plugin Name: Gravity Forms Salesforce API Add-On
 Plugin URI: http://www.seodenver.com/salesforce/
 Description: Integrates <a href="http://formplugin.com?r=salesforce">Gravity Forms</a> with Salesforce allowing form submissions to be automatically sent to your Salesforce account
-Version: 2.3.1
+Version: 2.3.2
 Author: Katz Web Services, Inc.
 Author URI: http://www.katzwebservices.com
 
@@ -37,7 +37,7 @@ class GFSalesforce {
     private static $path = "gravity-forms-salesforce/salesforce-api.php";
     private static $url = "http://formplugin.com";
     private static $slug = "gravity-forms-salesforce";
-    private static $version = "2.3.1";
+    private static $version = "2.3.2";
     private static $min_gravityforms_version = "1.3.9";
     private static $is_debug = NULL;
     private static $cache_time = 86400; // 24 hours
@@ -632,8 +632,6 @@ EOD;
     }
 
     static private function api_is_valid($api) {
-        #self::r($api);
-
         if($api === false || is_string($api) || !empty($api->lastError)) {
             return false;
         }
@@ -1317,7 +1315,7 @@ jQuery(document).ready(function() {
 
         foreach((array)$merge_vars as $var){
 
-            if($var['type'] === 'reference' && apply_filters('gf_salesforce_skip_reference_types', true)) { continue; }
+            if($var['type'] === 'reference' && empty($var['req']) && apply_filters('gf_salesforce_skip_reference_types', true)) { continue; }
 
             $selected_field = isset($config["meta"]["field_map"][$var["tag"]]) ? $config["meta"]["field_map"][$var["tag"]] : false;
             $required = $var["req"] === true ? "<span class='gfield_required' title='This field is required.'>(Required)</span>" : "";
@@ -1489,9 +1487,10 @@ jQuery(document).ready(function() {
                             $merge_vars[$var_tag] = implode(';', array_map('html_entity_decode', array_map('htmlspecialchars', $elements)));
                             break;
                         default:
-                            $merge_vars[$var_tag] = htmlspecialchars($entry[$field_id]);
+                            $value = htmlspecialchars($entry[$field_id]);
+                            $merge_vars[$var_tag] = $value;
                     }
-                } else {
+            } else {
 
                     // This is for checkboxes
                     $elements = array();
@@ -1590,6 +1589,11 @@ jQuery(document).ready(function() {
         if(function_exists('mb_convert_encoding') && !seems_utf8($string)) {
             $string = mb_convert_encoding($string, "UTF-8");
         }
+
+        // Salesforce can't handle newlines in SOAP; we encode them instead.
+        $string = str_replace("\n", '&#x0a;', $string);
+        $string = str_replace("\r", '&#x0d;', $string);
+        $string = str_replace("\t", '&#09;', $string);
 
         // Remove control characters (like page break, etc.)
         $string = preg_replace('/[[:cntrl:]]+/', '', $string);
