@@ -35,6 +35,10 @@ If you use the following Editions, you will use the included Web to Lead Add-on:
 - Group Edition
 - Professional Edition<br />*Note: You can also purchase API access for a Professional Edition.*
 
+#### Server Requirements
+
+This plugin requires you are running PHP 5.x and have SOAP enabled.
+
 #### Other Gravity Forms Add-ons:
 
 * <a href="http://wordpress.org/extend/plugins/gravity-forms-highrise/">Gravity Forms Highrise Add-on</a> - Integrate Gravity Forms with Highrise, a CRM
