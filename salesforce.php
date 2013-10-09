@@ -2,7 +2,7 @@
 /*
 Plugin Name: Gravity Forms Salesforce Web to Lead Add-On
 Description: Integrate <a href="http://formplugin.com?r=salesforce">Gravity Forms</a> with Salesforce - form submissions are automatically sent to your Salesforce account!
-Version: 2.4
+Version: 2.4.1
 Author: Katz Web Services, Inc.
 Author URI: http://www.katzwebservices.com
 
@@ -33,7 +33,7 @@ class GFSalesforceWebToLead {
     private static $path = "gravity-forms-salesforce/salesforce.php";
     private static $url = "http://www.gravityforms.com";
     private static $slug = "gravity-forms-salesforce";
-    private static $version = "2.4";
+    private static $version = "2.4.1";
     private static $min_gravityforms_version = "1.3.9";
 
     //Plugin starting point. Will load appropriate files
@@ -633,13 +633,24 @@ For more information on custom fields, %sread this Salesforce.com Help Article%s
                } else if (trim(strtolower($label)) == 'salesforce' ) {
                     $salesforce = $value;
                } else {
+                    $field_name = null;
+
                     if(!empty($field['inputName']) && (apply_filters('gf_salesforce_use_inputname', true) === true)) {
-                        $data["{$field['inputName']}"] = $value ;
+                        $field_name = $field[ 'inputName' ];
                     } elseif(!empty($field['adminLabel']) && (apply_filters('gf_salesforce_use_adminlabel', true) === true)) {
-                        $data["{$field['adminLabel']}"] = $value ;
+                        $field_name = $field[ 'adminLabel' ];
                     } elseif((!empty($data["{$label}"]) && !empty($value) && $value !== '0') || empty($data["{$label}"]) && (array_key_exists("{$label}", $defaults) || apply_filters('gf_salesforce_use_custom_fields', true) === true)) {
-                        $data["{$label}"] = $value ;
-                   }
+                        $field_name = $label;
+                    }
+
+                    $field_name = apply_filters( 'gf_salesforce_mapped_field_name', $field_name, $field, $form_meta, $entry );
+
+                    $value = apply_filters( 'gf_salesforce_mapped_value_' . $field_name, $value, $field, $field_name, $form_meta, $entry );
+                    $value = apply_filters( 'gf_salesforce_mapped_value', $value, $field, $field_name, $form_meta, $entry );
+
+                    if ( null !== $field_name ) {
+                        $data["{$field_name}"] = $value;
+                    }
                }
            }
        }
