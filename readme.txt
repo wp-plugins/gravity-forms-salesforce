@@ -1,10 +1,11 @@
 === Gravity Forms Salesforce Add-on ===
 Tags: gravity forms, forms, gravity, form, crm, gravity form, salesforce, salesforce plugin, form, forms, gravity, gravity form, gravity forms, secure form, simplemodal contact form, wp contact form, widget, sales force, customer, contact, contacts, address, addresses, address book
 Requires at least: 3.3
-Tested up to: 3.6.1
+Tested up to: 3.7.1
 Stable tag: trunk
 Contributors: katzwebdesign,katzwebservices
 Donate link:https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=zackkatz%40gmail%2ecom&item_name=Gravity%20Forms%20Salesforce%20Addon&no_shipping=0&no_note=1&tax=0&currency_code=USD&lc=US&bn=PP%2dDonationsBF&charset=UTF%2d8
+License: GPLv2 or later
 
 Integrate the remarkable Gravity Forms plugin with Salesforce.
 
@@ -134,6 +135,23 @@ function make_my_own_lead_source($lead_source, $form_meta, $data) {
     // $data - The data passed to Salesforce
 
     return $lead_source; // Return something else if you want to.
+}
+`
+
+= My Assignment Rule is not triggered.  How do I fix this? = 
+
+`
+add_action('gf_salesforce_connection', 'gf_salesforce_set_default_assignement_rule');
+
+function gf_salesforce_set_default_assignement_rule($client) {
+    //  Two Options for Setting Assignment Rule
+    //    1.  Pass in AssignmentRule ID and "false" to use a specific assignment rule.
+    //    2.  Pass in null and true to trigger the DEFAULT AssignementRule
+    $header = new \AssignmentRuleHeader(null, true);
+
+    $client->setAssignmentRuleHeader($header);
+
+    return $client;
 }
 `
 
