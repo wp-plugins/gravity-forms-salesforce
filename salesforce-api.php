@@ -2,8 +2,8 @@
 /*
 Plugin Name: Gravity Forms Salesforce API Add-On
 Plugin URI: http://www.seodenver.com/salesforce/
-Description: Integrates <a href="http://formplugin.com?r=salesforce">Gravity Forms</a> with Salesforce allowing form submissions to be automatically sent to your Salesforce account
-Version: 2.4.1
+Description: Integrates <a href="http://formplugin.com?r=salesforce">Gravity Forms</a> with Salesforce allowing form submissions to be automatically sent to your Salesforce account. Requires Salesforce API access. <strong>If you don't have API access</strong>, use the "Gravity Forms Salesforce - Web-to-Lead Add-On" plugin instead.
+Version: 2.5
 Author: Katz Web Services, Inc.
 Author URI: http://www.katzwebservices.com
 
@@ -37,7 +37,7 @@ class GFSalesforce {
     private static $path = "gravity-forms-salesforce/salesforce-api.php";
     private static $url = "http://formplugin.com";
     private static $slug = "gravity-forms-salesforce";
-    private static $version = "2.4.1";
+    private static $version = "2.5";
     private static $min_gravityforms_version = "1.3.9";
     private static $is_debug = NULL;
     private static $cache_time = 86400; // 24 hours
@@ -995,7 +995,7 @@ EOD;
             <div id="salesforce_field_group" valign="top" <?php echo empty($config["meta"]["contact_object_name"]) || empty($config["form_id"]) ? "style='display:none;'" : "" ?>>
                 <div id="salesforce_field_container" valign="top" class="margin_vertical_10" >
                     <h2><?php _e('3. Map form fields to Salesforce fields.', "gravity-forms-salesforce"); ?></h2>
-                    <h3 class="description"><?php _e('About field mapping:', "gravity-forms-salesforce"); ?></h2>
+                    <h3 class="description"><?php _e('About field mapping:', "gravity-forms-salesforce"); ?></h3>
                     <label for="salesforce_fields" class="left_header"><?php _e("Standard Fields", "gravity-forms-salesforce"); ?> <?php gform_tooltip("salesforce_map_fields") ?></label>
                     <div id="salesforce_field_list">
                     <?php
