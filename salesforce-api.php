@@ -3,7 +3,7 @@
 Plugin Name: Gravity Forms Salesforce API Add-On
 Plugin URI: http://www.seodenver.com/salesforce/
 Description: Integrates <a href="http://formplugin.com?r=salesforce">Gravity Forms</a> with Salesforce allowing form submissions to be automatically sent to your Salesforce account. Requires Salesforce API access. <strong>If you don't have API access</strong>, use the "Gravity Forms Salesforce - Web-to-Lead Add-On" plugin instead.
-Version: 2.5
+Version: 2.5.1
 Author: Katz Web Services, Inc.
 Author URI: http://www.katzwebservices.com
 
@@ -37,7 +37,7 @@ class GFSalesforce {
     private static $path = "gravity-forms-salesforce/salesforce-api.php";
     private static $url = "http://formplugin.com";
     private static $slug = "gravity-forms-salesforce";
-    private static $version = "2.5";
+    private static $version = "2.5.1";
     private static $min_gravityforms_version = "1.3.9";
     private static $is_debug = NULL;
     private static $cache_time = 86400; // 24 hours
@@ -635,10 +635,13 @@ EOD;
         if($api === false || is_string($api) || !empty($api->lastError)) {
             return false;
         }
-        if(is_a($api, 'SforcePartnerClient') && method_exists($api, 'getLastResponseHeaders') && preg_match('/200\sOK/ism', $api->getLastResponseHeaders())) {
-            return true;
+        elseif(!is_a($api, 'SforcePartnerClient') && !is_a($api, 'SforceEnterpriseClient')) {
+            return false;
         }
-        return false;
+        elseif(!method_exists($api, 'getLastResponseHeaders') || !preg_match('/200\sOK/ism', $api->getLastResponseHeaders())) {
+            return false;
+        }
+        return true;
     }
 
     public static function get_api($settings = array()){
@@ -662,13 +665,24 @@ EOD;
 
         $libpath = plugin_dir_path(__FILE__).'Force.com-Toolkit-for-PHP/soapclient/';
 
-        if(!class_exists("SforcePartnerClient")) {
-            require_once $libpath.'SforcePartnerClient.php';
-        }
+        $enterprise = apply_filters('gf_salesforce_enterprise', false, $settings);
 
         try {
             //This is instantiating the service used for the sfdc api
-            $mySforceConnection = new SforcePartnerClient();
+            if($enterprise) {
+                if(!class_exists("SforceEnterpriseClient")) {
+                    require_once $libpath.'SforceEnterpriseClient.php';
+                }
+
+                $mySforceConnection = new SforceEnterpriseClient();
+            }
+            else {
+                if(!class_exists("SforcePartnerClient")) {
+                    require_once $libpath.'SforcePartnerClient.php';
+                }
+
+                $mySforceConnection = new SforcePartnerClient();
+            }
 
             /**
             * Create a connection using SforceBaseClient::createConnection().
