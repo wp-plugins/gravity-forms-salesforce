@@ -241,10 +241,15 @@ This plugin is released under a GPL license.
 
 == Changelog ==
 
+= 2.6 & 2.6.1 (January 23, 2014) =
+* Added: Manual export of leads - a new setting in the Form settings configuration that prevents all entries from being sent to Salesforce; only manually-approved entries may be sent.
+* Added: `$feed` and `$api` variables into the `gf_salesforce_create_data` filter, so that additional things can be done in `$merge_vars` based on the feed options, and $api can be further tweaked (setAssignmentRuleHeader) based on the feed object name. Thanks, [@sc0ttkclark](https://github.com/sc0ttkclark)!
+* Fixed: PHP static method warnings
+* Fixed: Supports paths outside of standard WP plugin directory structure
+
 = 2.5.3 =
 * Fixed: Minor PHP static method warning
 * Fixed: Dates now export properly in API and new Web-to-Lead Addon
-* Tweak: Added translation to error log strings
 
 = 2.5.2.1 =
 * Fixed: Minor PHP static method warning
@@ -364,10 +369,15 @@ This plugin is released under a GPL license.
 
 == Upgrade Notice ==
 
+= 2.6 & 2.6.1 (January 23, 2014) =
+* Added: Manual export of leads - a new setting in the Form settings configuration that prevents all entries from being sent to Salesforce; only manually-approved entries may be sent.
+* Added: `$feed` and `$api` variables into the `gf_salesforce_create_data` filter, so that additional things can be done in `$merge_vars` based on the feed options, and $api can be further tweaked (setAssignmentRuleHeader) based on the feed object name. Thanks, [@sc0ttkclark](https://github.com/sc0ttkclark)!
+* Fixed: PHP static method warnings
+* Fixed: Supports paths outside of standard WP plugin directory structure
+
 = 2.5.3 =
 * Fixed: Minor PHP static method warning
 * Fixed: Dates now export properly in API and new Web-to-Lead Addon
-* Tweak: Added translation to error log strings
 
 = 2.5.2.1 =
 * Fixed: Minor PHP static method warning
