@@ -7,7 +7,7 @@ Contributors: katzwebdesign,katzwebservices
 Donate link:https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=zackkatz%40gmail%2ecom&item_name=Gravity%20Forms%20Salesforce%20Addon&no_shipping=0&no_note=1&tax=0&currency_code=USD&lc=US&bn=PP%2dDonationsBF&charset=UTF%2d8
 License: GPLv2 or later
 
-This is the most powerful Salesforce integration available to WordPress.
+This is the most powerful Salesforce integration available for WordPress.
 
 == Description ==
 
