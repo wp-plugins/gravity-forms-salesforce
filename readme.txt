@@ -239,9 +239,10 @@ This plugin is released under a GPL license.
 
 == Changelog ==
 
-= 2.6.3 (February 13, 2014) =
+= 2.6.3 & 2.6.3.1 (February 13, 2014) =
 * Web-to-Lead: Re-added the functionality to show the little Salesforce icon in the forms list that indicate active feeds are enabled for that form.
 	- Integrated that method into the KWSAddon class
+* HotFix: Check for correct Add-on class name (`KWSGFAddOn2_1`)
 
 = 2.6.2 (February 11, 2014) =
 * API Version: Added a check to make sure server supports SOAP
@@ -378,9 +379,10 @@ This plugin is released under a GPL license.
 
 == Upgrade Notice ==
 
-= 2.6.3 (February 13, 2014) =
+= 2.6.3 & 2.6.3.1 (February 13, 2014) =
 * Web-to-Lead: Re-added the functionality to show the little Salesforce icon in the forms list that indicate active feeds are enabled for that form.
 	- Integrated that method into the KWSAddon class
+* HotFix: Check for correct Add-on class name (`KWSGFAddOn2_1`)
 
 = 2.6.2 (February 11, 2014) =
 * API Version: Added a check to make sure server supports SOAP
