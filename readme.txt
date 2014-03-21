@@ -239,6 +239,10 @@ This plugin is released under a GPL license.
 
 == Changelog ==
 
+= 2.6.4.1 (March 19, 2014) =
+* Fixed (API Version): Entry update improvement when set to manually export to Salesforce
+* Removed: Unused `plugin-upgrade.php` file
+
 = 2.6.4 (February 20, 2014) =
 * Fixed (API Version): Live Remote Field Mapping improvements
 	- Fixed endless spinning
@@ -389,6 +393,10 @@ This plugin is released under a GPL license.
 * Launch!
 
 == Upgrade Notice ==
+
+= 2.6.4.1 (March 19, 2014) =
+* Fixed (API Version): Entry update improvement when set to manually export to Salesforce
+* Removed: Unused `plugin-upgrade.php` file
 
 = 2.6.4 (February 20, 2014) =
 * Fixed (API Version): Live Remote Field Mapping improvements
