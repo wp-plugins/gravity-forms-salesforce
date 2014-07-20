@@ -43,6 +43,10 @@ When using the Web-to-Lead Add-on, you can choose to have form entries sent to S
 
 If you have questions, comments, or issues with this plugin, <strong>please leave your feedback on the <a href="https://github.com/katzwebservices/Gravity-Forms-Salesforce/issues?state=open">Plugin Support Forum</a></strong>.
 
+### Want to help translate?
+
+The plugin fully supports multiple languages! [Please help translate the plugin!](https://www.transifex.com/projects/p/gravity-forms-salesforce-add-on/)
+
 == Screenshots ==
 
 1. Configure Salesforce field mapping. Set up custom objects.
