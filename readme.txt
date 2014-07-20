@@ -2,7 +2,7 @@
 Tags: gravity forms, forms, gravity, form, crm, gravity form, salesforce, salesforce plugin, form, forms, gravity, gravity form, gravity forms, secure form, simplemodal contact form, wp contact form, widget, sales force, customer, contact, contacts, address, addresses, address book, web to lead, web to case, web-to-lead, web-to-case, cases, leads, lead
 Requires at least: 3.3
 Tested up to: 3.9.1
-Stable tag: 3.0.5
+Stable tag: 3.0.6
 Contributors: katzwebdesign,katzwebservices
 Donate link:https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=zackkatz%40gmail%2ecom&item_name=Gravity%20Forms%20Salesforce%20Addon&no_shipping=0&no_note=1&tax=0&currency_code=USD&lc=US&bn=PP%2dDonationsBF&charset=UTF%2d8
 License: GPLv2 or later
@@ -289,6 +289,15 @@ This plugin is released under a GPL license.
 
 == Changelog ==
 
+= 3.0.6 (July 19, 2014) =
+* If you haven't read the 3.0.5 changelog notes, please do so!
+* Added: Enabled Merge Tag field value support ([issue #97](https://github.com/katzwebservices/Gravity-Forms-Salesforce/issues/97))
+* Added [API Add-on]: "Form Title" as an option for mapping form fields
+* Fixed: Form details were not being properly passed ([issue #94](https://github.com/katzwebservices/Gravity-Forms-Salesforce/issues/94))
+* Fixed: DaddyAnalytics API names were incorrect for the API integration
+* Fixed: PHP warning about calling static functions
+* Added: Additional Debugging
+
 = 3.0.5 (June 26, 2014) =
 * __!!MAJOR UPDATE!!__ Please read through the changes below.
 * __API Add-on Changes__
@@ -472,6 +481,15 @@ This plugin is released under a GPL license.
 * Launch!
 
 == Upgrade Notice ==
+
+= 3.0.6 (July 19, 2014) =
+* If you haven't read the 3.0.5 changelog notes, please do so!
+* Added: Enabled Merge Tag field value support ([issue #97](https://github.com/katzwebservices/Gravity-Forms-Salesforce/issues/97))
+* Added [API Add-on]: "Form Title" as an option for mapping form fields
+* Fixed: Form details were not being properly passed ([issue #94](https://github.com/katzwebservices/Gravity-Forms-Salesforce/issues/94))
+* Fixed: DaddyAnalytics API names were incorrect for the API integration
+* Fixed: PHP warning about calling static functions
+* Added: Additional Debugging
 
 = 3.0.5 (June 26, 2014) =
 * __!!MAJOR UPDATE!!__ Please read through the changes below.
