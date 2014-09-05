@@ -1,8 +1,8 @@
 === Gravity Forms Salesforce Add-on ===
 Tags: gravity forms, forms, gravity, form, crm, gravity form, salesforce, salesforce plugin, form, forms, gravity, gravity form, gravity forms, secure form, simplemodal contact form, wp contact form, widget, sales force, customer, contact, contacts, address, addresses, address book, web to lead, web to case, web-to-lead, web-to-case, cases, leads, lead
 Requires at least: 3.3
-Tested up to: 3.9.1
-Stable tag: 3.0.6.1
+Tested up to: 4.0
+Stable tag: 3.0.6.2
 Contributors: katzwebdesign,katzwebservices
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=zackkatz%40gmail%2ecom&item_name=Gravity%20Forms%20Salesforce%20Addon&no_shipping=0&no_note=1&tax=0&currency_code=USD&lc=US&bn=PP%2dDonationsBF&charset=UTF%2d8
 License: GPLv2 or later
@@ -280,10 +280,18 @@ Add this to the bottom of your theme's `functions.php` file to force loading eve
 
 `add_filter( 'gf_salesforce_soap_is_available', '__return_true');`
 
+= Checkboxes aren't being passing to Salesforce =
+Make the value of checkboxes `1` in Gravity Forms. [See how to do that here](https://github.com/katzwebservices/Gravity-Forms-Salesforce/issues/99).
+
 = What's the license for this plugin? =
 This plugin is released under a GPL license.
 
 == Changelog ==
+
+= 3.0.6.2 (September 5, 2014) =
+* Fixed: Issue saving Web-to-Lead settings for Gravity Forms 1.8.10 or higher. Thanks, [@twiginteractive](https://github.com/twiginteractive)
+* Fixed: An issue with the OAuth library clashing if the same library is used elsewhere. Thanks, [@JasonTheAdams](https://github.com/JasonTheAdams)
+* Confirmed compatibility with WordPress 4.0
 
 = 3.0.6.1 (August 18, 2014) =
 * If you haven't read the 3.0.5 notes, please do so!
@@ -481,6 +489,11 @@ This plugin is released under a GPL license.
 * Launch!
 
 == Upgrade Notice ==
+
+= 3.0.6.2 (September 5, 2014) =
+* Fixed: Issue saving Web-to-Lead settings for Gravity Forms 1.8.10 or higher. Thanks, [@twiginteractive](https://github.com/twiginteractive)
+* Fixed: An issue with the OAuth library clashing if the same library is used elsewhere. Thanks, [@JasonTheAdams](https://github.com/JasonTheAdams)
+* Confirmed compatibility with WordPress 4.0
 
 = 3.0.6.1 (August 18, 2014) =
 * If you haven't read the 3.0.5 notes, please do so!
