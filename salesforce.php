@@ -2,10 +2,14 @@
 /*
 Plugin Name: Gravity Forms Salesforce Add-On
 Description: Integrates <a href="http://katz.si/gf">Gravity Forms</a> with Salesforce, allowing form submissions to be automatically sent to your Salesforce account.
-Version: 3.0.6.3
+Version: 3.1
 Requires at least: 3.3
 Author: Katz Web Services, Inc.
 Author URI: https://katz.co
+License:              GPLv2 or later
+License URI:      http://www.gnu.org/licenses/gpl-2.0.html
+Text Domain:          gravity-forms-salesforce
+Domain Path:          /languages
 
 ------------------------------------------------------------------------
 Copyright 2014 Katz Web Services, Inc.
@@ -31,9 +35,11 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  * Load the loader...we need to do this to make sure that the Gravity Forms addon is supported.
  *
  */
+require_once('lib/gf-utility-functions.php');
+
 class KWS_GF_Salesforce {
 
-    const version = '3.0.6.3';
+    const version = '3.1';
     static $file;
     static $plugin_dir_path;
 
@@ -48,6 +54,8 @@ class KWS_GF_Salesforce {
 
         add_action('admin_notices', array(&$this, 'addon_compatibility'));
 
+        add_action('admin_enqueue_scripts', array(&$this, 'load_admin_scripts'));
+
         add_filter('plugin_action_links', array(&$this, 'plugin_action_links'), 10, 2);
     }
 
@@ -58,7 +66,7 @@ class KWS_GF_Salesforce {
     function init() {
 
         //loading translations
-        load_plugin_textdomain('gravity-forms-salesforce', FALSE, '/gravity-forms-salesforce/languages' );
+        load_plugin_textdomain('gravity-forms-salesforce', FALSE, dirname( plugin_basename( __FILE__ ) ) . '/languages/' );
 
     }
 
@@ -74,6 +82,27 @@ class KWS_GF_Salesforce {
     }
 
     /**
+     * Loads `jquery-ui-sortable` on the Salesforce page
+     * @since 3.1
+     * @return
+     */
+    function load_admin_scripts() {
+        global $pagenow,$plugin_page;
+
+        if( empty( $plugin_page ) || $plugin_page !== 'gf_salesforce' ) {
+            return;
+        }
+
+        // Don't load on single feeds, only on main feeds page
+        if( !empty( $_GET['view'] ) ) {
+            return;
+        }
+
+        wp_enqueue_script( 'jquery-ui-sortable');
+
+    }
+
+    /**
      * Add links next
      * @param  [type]      $links [description]
      * @param  [type]      $file  [description]
@@ -81,8 +110,8 @@ class KWS_GF_Salesforce {
      */
     function plugin_action_links( $links, $file ) {
         if ( $file ==  plugin_basename(self::$file) ) {
-            array_unshift( $links, '<a href="https://github.com/katzwebservices/Gravity-Forms-Salesforce/issues?state=open"><span class="dashicons dashicons-sos"></span>' . __('Support', 'idx-plus') . '</a>' );
-            array_unshift( $links, '<a href="' . admin_url( 'admin.php?page=gf_settings&amp;subview=sf-loader' ) . '"><span class="dashicons dashicons-admin-generic"></span>' . __('Settings', 'idx-plus') . '</a>' );
+            array_unshift( $links, '<a href="https://github.com/katzwebservices/Gravity-Forms-Salesforce/issues?state=open"><span class="dashicons dashicons-sos"></span>' . __('Support', 'gravity-forms-salesforce') . '</a>' );
+            array_unshift( $links, '<a href="' . admin_url( 'admin.php?page=gf_settings&amp;subview=sf-loader' ) . '"><span class="dashicons dashicons-admin-generic"></span>' . __('Settings', 'gravity-forms-salesforce') . '</a>' );
         }
         return $links;
     }
