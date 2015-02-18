@@ -1,10 +1,10 @@
 === Gravity Forms Salesforce Add-on ===
 Tags: gravity forms, forms, gravity, form, crm, gravity form, salesforce, salesforce plugin, form, forms, gravity, gravity form, gravity forms, secure form, simplemodal contact form, wp contact form, widget, sales force, customer, contact, contacts, address, addresses, address book, web to lead, web to case, web-to-lead, web-to-case, cases, leads, lead
 Requires at least: 3.3
-Tested up to: 4.0
-Stable tag: 3.1
+Tested up to: 4.1
+Stable tag: 3.1.1
 Contributors: katzwebdesign,katzwebservices
-Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=zackkatz%40gmail%2ecom&item_name=Gravity%20Forms%20Salesforce%20Addon&no_shipping=0&no_note=1&tax=0&currency_code=USD&lc=US&bn=PP%2dDonationsBF&charset=UTF%2d8
+Donate link: https://gravityview.co
 License: GPLv2 or later
 
 This is the most powerful Salesforce integration available for WordPress.
@@ -290,6 +290,10 @@ This plugin is released under a GPL license.
 
 == Changelog ==
 
+= 3.1.1 (February 17, 2015) =
+* Fixed: Warning in Gravity Forms 1.9 about Add-on requiring an update
+* Fixed: Loading order of settings tabs
+
 = 3.1 (December 1, 2014) =
 * Thank you to [@zmonteca](https://github.com/zmonteca) for this update. The great new functionality was added by him!
 * Added: Use of Sandbox constant
@@ -509,6 +513,10 @@ This plugin is released under a GPL license.
 * Launch!
 
 == Upgrade Notice ==
+
+= 3.1.1 (February 17, 2015) =
+* Fixed: Warning in Gravity Forms 1.9 about the add-on requiring an update
+* Fixed: Loading order of settings tabs
 
 = 3.1 (December 1, 2014) =
 * Thank you to [@zmonteca](https://github.com/zmonteca) for this update. The great new functionality was added by him!
